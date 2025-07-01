@@ -22,7 +22,7 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/usuarios/registrar").permitAll()
+                        .requestMatchers("/auth/**", "/usuarios/registrar", "/servicos/ativos", "/h2-console/**").permitAll()// Acesso livre nessas URI
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

@@ -1,4 +1,10 @@
 package com.java360.agendei.domain.model;
 
-public class CategoriaServico {
+public enum CategoriaServico {
+    BARBEARIA,
+    MANICURE,
+    MAQUIAGEM,
+    ESTETICISTA,
+    SPA,
+    OUTROS
 }

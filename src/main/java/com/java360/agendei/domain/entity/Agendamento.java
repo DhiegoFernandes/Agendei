@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "agendamento")
@@ -21,14 +22,19 @@ public class Agendamento {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "name", nullable = false, length = 45)
-    private String name;
+    @Column(nullable = false)
+    private LocalDateTime dataHora;
 
-    private String description; //######### tirar
-    private LocalDate initialDate;
-    private LocalDate finalDate;
-
-    @Enumerated(EnumType.STRING) // Tip: (EnumType.ORDINAL) deixa os status PENDING = 0, IN_PROGRESS = 1, FINISHED = 2
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AgendamentoStatus status;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "servico_id")
+    private Servico servico;
 
 }

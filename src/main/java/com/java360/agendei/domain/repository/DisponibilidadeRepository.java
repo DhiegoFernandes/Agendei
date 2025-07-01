@@ -1,4 +1,10 @@
 package com.java360.agendei.domain.repository;
 
-public class DisponibilidadeRepository {
+import com.java360.agendei.domain.entity.Disponibilidade;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface DisponibilidadeRepository extends JpaRepository<Disponibilidade, String> {
+    List<Disponibilidade> findByPrestadorId(String prestadorId);
 }

@@ -1,15 +1,22 @@
 package com.java360.agendei.domain.applicationservice;
 
 import com.java360.agendei.domain.entity.Agendamento;
+import com.java360.agendei.domain.entity.Cliente;
+import com.java360.agendei.domain.entity.Servico;
 import com.java360.agendei.domain.exception.AgendamentoNotFoundException;
 import com.java360.agendei.domain.exception.InvalidAgendamentoStatusException;
 import com.java360.agendei.domain.model.AgendamentoStatus;
 import com.java360.agendei.domain.repository.AgendamentoRepository;
-import com.java360.agendei.infrastructure.dto.SaveAgendamentoDataDTO;
+import com.java360.agendei.domain.repository.DisponibilidadeRepository;
+import com.java360.agendei.domain.repository.ServicoRepository;
+import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.infrastructure.dto.SaveAgendamentoDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,27 +24,45 @@ import org.springframework.stereotype.Service;
 public class AgendamentoService {
 
     private final AgendamentoRepository agendamentoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ServicoRepository servicoRepository;
+    private final DisponibilidadeService disponibilidadeService;
 
-    //Cria projeto com dados do saveAgendamentoDataDTO
-    @Transactional // diz pra jpa que isso é uma transação, usa quando o banco de dados é alterado
-    public Agendamento createAgendamento(SaveAgendamentoDataDTO saveAgendamentoData) {
-        Agendamento agendamento = Agendamento
-                .builder()
-                .name(saveAgendamentoData.getName())
-                .description(saveAgendamentoData.getDescription())
-                .initialDate(saveAgendamentoData.getInitialDate())
-                .finalDate(saveAgendamentoData.getFinalDate())
-                .status(AgendamentoStatus.PENDING) //Por padrão o agendamento é criado pendente
+    @Transactional
+    public Agendamento createAgendamento(SaveAgendamentoDTO dto) {
+        Cliente cliente = (Cliente) usuarioRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado."));
+
+        Servico servico = servicoRepository.findById(dto.getServicoId())
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
+
+        // Valida se prestador atende nesse horário
+        if (!disponibilidadeService.prestadorEstaDisponivel(servico.getPrestador().getId(), dto.getDataHora())) {
+            throw new IllegalArgumentException("O prestador não atende neste horário.");
+        }
+
+        // Verifica se o horário já está ocupado (pendente ou concluído)
+        boolean ocupado = agendamentoRepository.existsByServico_Prestador_IdAndDataHoraAndStatusIn(
+                servico.getPrestador().getId(),
+                dto.getDataHora(),
+                List.of(AgendamentoStatus.PENDING, AgendamentoStatus.CONCLUIDO)
+        );
+
+        if (ocupado) {
+            throw new IllegalArgumentException("O horário já está ocupado.");
+        }
+
+        Agendamento agendamento = Agendamento.builder()
+                .cliente(cliente)
+                .servico(servico)
+                .dataHora(dto.getDataHora())
+                .status(AgendamentoStatus.PENDING)
                 .build();
 
-        agendamentoRepository.save(agendamento); //salva no banco de dados
-
-        log.info("Agendamento criado: {}", agendamento); // log pode ser info, error, debug
-        System.out.println("Agendamento criado: "+ agendamento);
-
-        return agendamento;
+        return agendamentoRepository.save(agendamento);
     }
 
+/*
     public Agendamento loadAgendamento(String agendamentoId){
         //retorna o agendamento OU gera exceção
         return agendamentoRepository.
@@ -73,6 +98,6 @@ public class AgendamentoService {
         }
 
     }
-
+*/
 
 }

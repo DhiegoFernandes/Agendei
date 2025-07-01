@@ -3,7 +3,7 @@ package com.java360.agendei.infrastructure.controller;
 import com.java360.agendei.domain.applicationservice.AgendamentoService;
 import com.java360.agendei.domain.entity.Agendamento;
 import com.java360.agendei.infrastructure.dto.AgendamentoDTO;
-import com.java360.agendei.infrastructure.dto.SaveAgendamentoDataDTO;
+import com.java360.agendei.infrastructure.dto.SaveAgendamentoDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +23,19 @@ public class AgendamentoRestResource {
 
     private final AgendamentoService agendamentoService;
 
+
+    @PostMapping
+    public ResponseEntity<AgendamentoDTO> agendar(@RequestBody @Valid SaveAgendamentoDTO dto) {
+        Agendamento ag = agendamentoService.createAgendamento(dto);
+        return ResponseEntity
+                .created(URI.create(PATH_AGENDAMENTOS + "/" + ag.getId()))
+                .body(AgendamentoDTO.fromEntity(ag));
+    }
+
+
+
+
+    /*
     @PostMapping //Criar agendamento POST
     public ResponseEntity<AgendamentoDTO> createAgendamento(@RequestBody @Valid SaveAgendamentoDataDTO saveAgendamentoData){ //Valid verifica se o objeto é valido (parametros aceitaveis)
 
@@ -56,4 +69,5 @@ public class AgendamentoRestResource {
         Agendamento agendamento = agendamentoService.updateAgendamento(agendamentoId, saveAgendamentoData);
         return ResponseEntity.ok(AgendamentoDTO.create(agendamento));
     }
+     */
 }
