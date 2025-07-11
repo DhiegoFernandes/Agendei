@@ -22,7 +22,7 @@ public class DisponibilidadeController {
 
     @PostMapping
     public ResponseEntity<DisponibilidadeDTO> cadastrar(@RequestBody @Valid SaveDisponibilidadeDTO dto) {
-        Disponibilidade disponibilidade = disponibilidadeService.cadastrarDisponibilidade(dto);
+        Disponibilidade disponibilidade = disponibilidadeService.cadastrarOuAtualizarDisponibilidade(dto);
         return ResponseEntity
                 .created(URI.create("/disponibilidades/" + disponibilidade.getId()))
                 .body(DisponibilidadeDTO.fromEntity(disponibilidade));

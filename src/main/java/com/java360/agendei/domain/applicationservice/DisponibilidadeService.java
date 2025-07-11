@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,7 @@ public class DisponibilidadeService {
     }
 
     @Transactional
-    public Disponibilidade cadastrarDisponibilidade(SaveDisponibilidadeDTO dto) {
+    public Disponibilidade cadastrarOuAtualizarDisponibilidade(SaveDisponibilidadeDTO dto) {
         Prestador prestador = (Prestador) usuarioRepository.findById(dto.getPrestadorId())
                 .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
 
@@ -40,14 +41,26 @@ public class DisponibilidadeService {
             throw new IllegalArgumentException("Horário de início deve ser antes do horário de fim.");
         }
 
-        Disponibilidade disponibilidade = Disponibilidade.builder()
+        Optional<Disponibilidade> existente = disponibilidadeRepository
+                .findByPrestadorIdAndDiaSemana(dto.getPrestadorId(), dto.getDiaSemana());
+
+        if (existente.isPresent()) {
+            // Atualiza a disponibilidade existente
+            Disponibilidade d = existente.get();
+            d.setHoraInicio(dto.getHoraInicio());
+            d.setHoraFim(dto.getHoraFim());
+            return d;
+        }
+
+        // Nova disponibilidade
+        Disponibilidade nova = Disponibilidade.builder()
+                .prestador(prestador)
                 .diaSemana(dto.getDiaSemana())
                 .horaInicio(dto.getHoraInicio())
                 .horaFim(dto.getHoraFim())
-                .prestador(prestador)
                 .build();
 
-        return disponibilidadeRepository.save(disponibilidade);
+        return disponibilidadeRepository.save(nova);
     }
 
     public List<Disponibilidade> listarPorPrestador(String prestadorId) {

@@ -2,6 +2,7 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.ServicoService;
 import com.java360.agendei.domain.entity.Servico;
+import com.java360.agendei.infrastructure.dto.HorariosDisponiveisDTO;
 import com.java360.agendei.infrastructure.dto.SaveServicoDTO;
 import com.java360.agendei.infrastructure.dto.ServicoDTO;
 import jakarta.validation.Valid;
@@ -28,6 +29,12 @@ public class ServicoController {
         return ResponseEntity
                 .created(URI.create(PATH_SERVICOS + "/" + servico.getId()))
                 .body(ServicoDTO.fromEntity(servico));
+    }
+
+    @GetMapping("/{id}/horarios-disponiveis")
+    public ResponseEntity<HorariosDisponiveisDTO> listarHorarios(@PathVariable("id") String servicoId) {
+        var dto = servicoService.listarHorariosPorServico(servicoId);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/ativos")

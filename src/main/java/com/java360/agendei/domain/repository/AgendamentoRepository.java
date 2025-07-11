@@ -12,4 +12,6 @@ import java.util.List;
 public interface AgendamentoRepository extends JpaRepository<Agendamento, String> {
     boolean existsByServico_Prestador_IdAndDataHoraAndStatusIn(
             String prestadorId, LocalDateTime dataHora, List<AgendamentoStatus> status);
+
+    List<Agendamento> findByServico_Prestador_IdAndStatusIn(String prestadorId, List<AgendamentoStatus> status);
 }

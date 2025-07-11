@@ -1,15 +1,26 @@
 package com.java360.agendei.domain.applicationservice;
 
+import com.java360.agendei.domain.entity.Agendamento;
+import com.java360.agendei.domain.entity.Disponibilidade;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Servico;
+import com.java360.agendei.domain.model.AgendamentoStatus;
+import com.java360.agendei.domain.repository.AgendamentoRepository;
+import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.infrastructure.dto.HorariosDisponiveisDTO;
+import com.java360.agendei.infrastructure.dto.HorariosPorDiaDTO;
 import com.java360.agendei.infrastructure.dto.SaveServicoDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +28,8 @@ public class ServicoService {
 
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final DisponibilidadeRepository disponibilidadeRepository;
+    private final AgendamentoRepository agendamentoRepository;
 
     @Transactional
     public Servico cadastrarServico(SaveServicoDTO dto) {
@@ -44,6 +57,51 @@ public class ServicoService {
 
     public List<Servico> listarServicosAtivos() {
         return servicoRepository.findAllByAtivoTrue();
+    }
+
+    public HorariosDisponiveisDTO listarHorariosPorServico(String servicoId) {
+        Servico servico = servicoRepository.findById(servicoId)
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
+
+        if (!servico.isAtivo()) {
+            throw new IllegalArgumentException("Serviço está desativado.");
+        }
+
+        String prestadorId = servico.getPrestador().getId();
+        int duracao = servico.getDuracaoMinutos();
+
+        List<Disponibilidade> disponibilidades = disponibilidadeRepository.findByPrestadorId(prestadorId);
+
+        List<Agendamento> agendamentosOcupados = agendamentoRepository.findByServico_Prestador_IdAndStatusIn(
+                prestadorId,
+                List.of(AgendamentoStatus.PENDING, AgendamentoStatus.CONCLUIDO)
+        );
+
+        // Mapeia horários ocupados por dia e hora
+        Set<String> horariosOcupados = agendamentosOcupados.stream()
+                .map(a -> a.getDataHora().getDayOfWeek().name() + "-" + a.getDataHora().toLocalTime().toString())
+                .collect(Collectors.toSet());
+
+        List<HorariosPorDiaDTO> dias = new ArrayList<>();
+
+        for (Disponibilidade d : disponibilidades) {
+            List<String> horarios = new ArrayList<>();
+            LocalTime hora = d.getHoraInicio();
+
+            while (hora.plusMinutes(duracao).isBefore(d.getHoraFim().plusSeconds(1))) {
+                String chave = d.getDiaSemana().name() + "-" + hora.toString();
+                if (!horariosOcupados.contains(chave)) {
+                    horarios.add(hora.toString());
+                }
+                hora = hora.plusMinutes(duracao);
+            }
+
+            if (!horarios.isEmpty()) {
+                dias.add(new HorariosPorDiaDTO(d.getDiaSemana(), horarios));
+            }
+        }
+
+        return new HorariosDisponiveisDTO(servicoId, dias);
     }
 
     @Transactional
