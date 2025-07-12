@@ -30,6 +30,9 @@ public class SaveServicoDTO {
     @NotNull
     private Boolean ativo;
 
+    @NotBlank
+    private String negocioId;
+
     @AssertTrue(message = "A duração deve ser positiva")
     public boolean isDuracaoValida() {
         return duracaoMinutos > 0;

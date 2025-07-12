@@ -2,6 +2,7 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.ServicoService;
 import com.java360.agendei.domain.entity.Servico;
+import com.java360.agendei.domain.model.CategoriaServico;
 import com.java360.agendei.infrastructure.dto.HorariosDisponiveisDTO;
 import com.java360.agendei.infrastructure.dto.SaveServicoDTO;
 import com.java360.agendei.infrastructure.dto.ServicoDTO;
@@ -48,6 +49,12 @@ public class ServicoController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/negocio/{id}")
+    public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@PathVariable String id) {
+        List<ServicoDTO> lista = servicoService.listarServicosPorNegocio(id);
+        return ResponseEntity.ok(lista);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<ServicoDTO> atualizar(@PathVariable String id, @RequestBody @Valid SaveServicoDTO dto) {
         System.out.println("atualizar put");
@@ -56,9 +63,19 @@ public class ServicoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> desativar(@PathVariable String id) {
-        System.out.println("atualizar put");
-        servicoService.desativarServico(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> excluirServico(@PathVariable String id, @RequestParam String prestadorId) {
+        servicoService.excluirServico(id, prestadorId);
+        return ResponseEntity.noContent().build(); // 204
     }
+
+    @GetMapping("/busca")
+    public ResponseEntity<List<ServicoDTO>> buscar(
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) CategoriaServico categoria,
+            @RequestParam(required = false) String nomePrestador
+    ) {
+        var resultado = servicoService.buscarServicos(titulo, categoria, nomePrestador);
+        return ResponseEntity.ok(resultado);
+    }
+
 }

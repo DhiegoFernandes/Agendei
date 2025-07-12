@@ -15,6 +15,7 @@ public class ServicoDTO {
     private final boolean ativo;
     private final String prestadorId;
     private final String nomePrestador;
+    private final String negocioId;
 
     public static ServicoDTO fromEntity(Servico servico) {
         return new ServicoDTO(
@@ -26,7 +27,8 @@ public class ServicoDTO {
                 servico.getDuracaoMinutos(),
                 servico.isAtivo(),
                 servico.getPrestador().getId(),
-                servico.getPrestador().getNome()
+                servico.getPrestador().getNome(),
+                servico.getNegocio().getId()
         );
     }
 }

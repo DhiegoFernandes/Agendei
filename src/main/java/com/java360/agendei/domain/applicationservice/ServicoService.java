@@ -1,17 +1,13 @@
 package com.java360.agendei.domain.applicationservice;
 
-import com.java360.agendei.domain.entity.Agendamento;
-import com.java360.agendei.domain.entity.Disponibilidade;
-import com.java360.agendei.domain.entity.Prestador;
-import com.java360.agendei.domain.entity.Servico;
+import com.java360.agendei.domain.entity.*;
 import com.java360.agendei.domain.model.AgendamentoStatus;
-import com.java360.agendei.domain.repository.AgendamentoRepository;
-import com.java360.agendei.domain.repository.DisponibilidadeRepository;
-import com.java360.agendei.domain.repository.ServicoRepository;
-import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.domain.model.CategoriaServico;
+import com.java360.agendei.domain.repository.*;
 import com.java360.agendei.infrastructure.dto.HorariosDisponiveisDTO;
 import com.java360.agendei.infrastructure.dto.HorariosPorDiaDTO;
 import com.java360.agendei.infrastructure.dto.SaveServicoDTO;
+import com.java360.agendei.infrastructure.dto.ServicoDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,17 +26,36 @@ public class ServicoService {
     private final UsuarioRepository usuarioRepository;
     private final DisponibilidadeRepository disponibilidadeRepository;
     private final AgendamentoRepository agendamentoRepository;
+    private final NegocioRepository negocioRepository;
 
     @Transactional
     public Servico cadastrarServico(SaveServicoDTO dto) {
-        boolean existeMesmoTitulo = servicoRepository
-                .existsByTituloAndPrestadorId(dto.getTitulo(), dto.getPrestadorId());
-        if (existeMesmoTitulo) {
-            throw new IllegalArgumentException("Este prestador já possui um serviço com esse título.");
-        }
+
+//        boolean existeMesmoTitulo = servicoRepository
+//                .existsByTituloAndPrestadorId(dto.getTitulo(), dto.getPrestadorId());
+//        if (existeMesmoTitulo) {
+//            throw new IllegalArgumentException("Este prestador já possui um serviço com esse título.");
+//        }
 
         Prestador prestador = (Prestador) usuarioRepository.findById(dto.getPrestadorId())
                 .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+
+        if (prestador.getNegocio() == null) {
+            throw new IllegalArgumentException("Prestador não está associado a um negócio. Não é possível cadastrar o serviço.");
+        }
+
+        Negocio negocio = negocioRepository.findById(dto.getNegocioId())
+                .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
+
+        if (prestador.getNegocio() == null || !prestador.getNegocio().getId().equals(dto.getNegocioId())) {
+            throw new IllegalArgumentException("O prestador não pertence ao negócio informado.");
+        }
+
+        boolean tituloDuplicado = servicoRepository.existsByTituloAndNegocioId(dto.getTitulo(), dto.getNegocioId());
+
+        if (tituloDuplicado) {
+            throw new IllegalArgumentException("Já existe um serviço com esse título neste negócio.");
+        }
 
         Servico servico = Servico.builder()
                 .titulo(dto.getTitulo())
@@ -50,6 +65,7 @@ public class ServicoService {
                 .duracaoMinutos(dto.getDuracaoMinutos())
                 .ativo(true)
                 .prestador(prestador)
+                .negocio(negocio)
                 .build();
 
         return servicoRepository.save(servico);
@@ -57,6 +73,13 @@ public class ServicoService {
 
     public List<Servico> listarServicosAtivos() {
         return servicoRepository.findAllByAtivoTrue();
+    }
+
+    public List<ServicoDTO> listarServicosPorNegocio(String negocioId) {
+        List<Servico> servicos = servicoRepository.findByNegocio_IdAndAtivoTrue(negocioId);
+        return servicos.stream()
+                .map(ServicoDTO::fromEntity)
+                .toList();
     }
 
     public HorariosDisponiveisDTO listarHorariosPorServico(String servicoId) {
@@ -127,11 +150,31 @@ public class ServicoService {
         return servico;
     }
 
+
+    /// REMOVER REMOVER REMOVER REMOVER ????
     @Transactional
     public void desativarServico(String id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
         servico.setAtivo(false);
+    }
+
+    @Transactional
+    public void excluirServico(String servicoId, String prestadorId) {
+        Servico servico = servicoRepository.findById(servicoId)
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
+
+        if (!servico.getPrestador().getId().equals(prestadorId)) {
+            throw new IllegalArgumentException("Você não tem permissão para excluir este serviço.");
+        }
+
+        servico.setAtivo(false);
+    }
+
+
+    public List<ServicoDTO> buscarServicos(String titulo, CategoriaServico categoria, String nomePrestador) {
+        List<Servico> resultados = servicoRepository.buscarServicos(titulo, categoria, nomePrestador);
+        return resultados.stream().map(ServicoDTO::fromEntity).toList();
     }
 }

@@ -41,4 +41,8 @@ public class Servico {
     @ManyToOne(optional = false)
     @JoinColumn(name = "prestador_id")
     private Prestador prestador;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "negocio_id", nullable = false)
+    private Negocio negocio;
 }

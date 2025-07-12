@@ -1,0 +1,64 @@
+package com.java360.agendei.infrastructure.controller;
+
+import com.java360.agendei.domain.applicationservice.NegocioService;
+import com.java360.agendei.domain.entity.Negocio;
+import com.java360.agendei.domain.repository.ServicoRepository;
+import com.java360.agendei.infrastructure.dto.ConviteNegocioDTO;
+import com.java360.agendei.infrastructure.dto.CreateNegocioDTO;
+import com.java360.agendei.infrastructure.dto.NegocioDTO;
+import com.java360.agendei.infrastructure.dto.ServicoDTO;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.util.List;
+
+@RestController
+@RequestMapping("/negocios")
+@RequiredArgsConstructor
+public class NegocioController {
+
+    private final NegocioService negocioService;
+    private final ServicoRepository servicoRepository;
+
+    @PostMapping
+    public ResponseEntity<NegocioDTO> criar(@RequestBody @Valid CreateNegocioDTO dto) {
+        Negocio negocio = negocioService.criarNegocio(dto);
+        return ResponseEntity
+                .created(URI.create("/negocios/" + negocio.getId()))
+                .body(NegocioDTO.fromEntity(negocio));
+    }
+
+    @GetMapping("/negocio")
+    public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@RequestParam String nome) {
+        var lista = servicoRepository.findByNegocio_NomeIgnoreCaseAndAtivoTrue(nome)
+                .stream()
+                .map(ServicoDTO::fromEntity)
+                .toList();
+        return ResponseEntity.ok(lista);
+    }
+
+    @PostMapping("/convidar")
+    public ResponseEntity<String> convidarPrestador(@RequestBody @Valid ConviteNegocioDTO dto) {
+        negocioService.convidarPrestadorParaNegocio(dto);
+        return ResponseEntity.ok("Prestador associado ao negócio com sucesso.");
+    }
+
+    @DeleteMapping("/sair/{prestadorId}")
+    public ResponseEntity<String> sairDoNegocio(@PathVariable String prestadorId) {
+        negocioService.sairDoNegocio(prestadorId);
+        return ResponseEntity.ok("Prestador removido do negócio com sucesso.");
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> excluirNegocio(
+            @PathVariable String id,
+            @RequestParam String solicitanteId
+    ) {
+        negocioService.excluirNegocio(id, solicitanteId);
+        return ResponseEntity.ok("Negócio excluído com sucesso.");
+    }
+
+}
