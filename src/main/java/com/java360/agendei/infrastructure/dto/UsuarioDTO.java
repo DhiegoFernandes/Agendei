@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class UsuarioDTO {
-    private final String id;
+    private final Integer id;
     private final String nome;
     private final String email;
     private final String telefone;

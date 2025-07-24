@@ -33,7 +33,7 @@ public class ServicoController {
     }
 
     @GetMapping("/{id}/horarios-disponiveis")
-    public ResponseEntity<HorariosDisponiveisDTO> listarHorarios(@PathVariable("id") String servicoId) {
+    public ResponseEntity<HorariosDisponiveisDTO> listarHorarios(@PathVariable("id") Integer servicoId) {
         var dto = servicoService.listarHorariosPorServico(servicoId);
         return ResponseEntity.ok(dto);
     }
@@ -50,20 +50,20 @@ public class ServicoController {
     }
 
     @GetMapping("/negocio/{id}")
-    public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@PathVariable String id) {
+    public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@PathVariable Integer id) {
         List<ServicoDTO> lista = servicoService.listarServicosPorNegocio(id);
         return ResponseEntity.ok(lista);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ServicoDTO> atualizar(@PathVariable String id, @RequestBody @Valid SaveServicoDTO dto) {
+    public ResponseEntity<ServicoDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid SaveServicoDTO dto) {
         System.out.println("atualizar put");
         Servico servico = servicoService.atualizarServico(id, dto);
         return ResponseEntity.ok(ServicoDTO.fromEntity(servico));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirServico(@PathVariable String id, @RequestParam String prestadorId) {
+    public ResponseEntity<Void> excluirServico(@PathVariable Integer id, @RequestParam Integer prestadorId) {
         servicoService.excluirServico(id, prestadorId);
         return ResponseEntity.noContent().build(); // 204
     }

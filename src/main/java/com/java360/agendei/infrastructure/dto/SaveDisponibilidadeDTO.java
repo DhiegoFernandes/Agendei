@@ -19,5 +19,5 @@ public class SaveDisponibilidadeDTO {
     private LocalTime horaFim;
 
     @NotNull
-    private String prestadorId;
+    private Integer prestadorId;
 }

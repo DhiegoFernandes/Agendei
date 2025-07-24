@@ -19,22 +19,24 @@ public class JwtService {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    public String generateToken(String userId) {
+    public String generateToken(Integer userId) {
         return Jwts.builder()
-                .setSubject(userId)
+                .setSubject(userId.toString()) // faz o id do usuário virar string
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractUserId(String token) {
-        return Jwts.parserBuilder()
+    public Integer extractUserId(String token) {
+        String subject = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+
+        return Integer.parseInt(subject); // converte o id de volta pra integer
     }
 
     public boolean isValid(String token) {

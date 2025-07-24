@@ -1,13 +1,11 @@
 package com.java360.agendei.domain.applicationservice;
 
 import com.java360.agendei.domain.entity.*;
-import com.java360.agendei.domain.model.AgendamentoStatus;
 import com.java360.agendei.domain.model.CategoriaServico;
+import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.*;
-import com.java360.agendei.infrastructure.dto.HorariosDisponiveisDTO;
-import com.java360.agendei.infrastructure.dto.HorariosPorDiaDTO;
-import com.java360.agendei.infrastructure.dto.SaveServicoDTO;
-import com.java360.agendei.infrastructure.dto.ServicoDTO;
+import com.java360.agendei.infrastructure.dto.*;
+import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,20 +23,19 @@ public class ServicoService {
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final DisponibilidadeRepository disponibilidadeRepository;
-    private final AgendamentoRepository agendamentoRepository;
     private final NegocioRepository negocioRepository;
 
     @Transactional
     public Servico cadastrarServico(SaveServicoDTO dto) {
 
-//        boolean existeMesmoTitulo = servicoRepository
-//                .existsByTituloAndPrestadorId(dto.getTitulo(), dto.getPrestadorId());
-//        if (existeMesmoTitulo) {
-//            throw new IllegalArgumentException("Este prestador já possui um serviço com esse título.");
-//        }
 
         Prestador prestador = (Prestador) usuarioRepository.findById(dto.getPrestadorId())
                 .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+
+        //Verifica se o usuário tem permissão para fazer essa operação
+        Usuario solicitante = usuarioRepository.findById(dto.getPrestadorId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
         if (prestador.getNegocio() == null) {
             throw new IllegalArgumentException("Prestador não está associado a um negócio. Não é possível cadastrar o serviço.");
@@ -75,14 +72,14 @@ public class ServicoService {
         return servicoRepository.findAllByAtivoTrue();
     }
 
-    public List<ServicoDTO> listarServicosPorNegocio(String negocioId) {
+    public List<ServicoDTO> listarServicosPorNegocio(Integer negocioId) {
         List<Servico> servicos = servicoRepository.findByNegocio_IdAndAtivoTrue(negocioId);
         return servicos.stream()
                 .map(ServicoDTO::fromEntity)
                 .toList();
     }
 
-    public HorariosDisponiveisDTO listarHorariosPorServico(String servicoId) {
+    public HorariosDisponiveisDTO listarHorariosPorServico(Integer servicoId) {
         Servico servico = servicoRepository.findById(servicoId)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
@@ -90,20 +87,10 @@ public class ServicoService {
             throw new IllegalArgumentException("Serviço está desativado.");
         }
 
-        String prestadorId = servico.getPrestador().getId();
+        Integer prestadorId = servico.getPrestador().getId();
         int duracao = servico.getDuracaoMinutos();
 
         List<Disponibilidade> disponibilidades = disponibilidadeRepository.findByPrestadorId(prestadorId);
-
-        List<Agendamento> agendamentosOcupados = agendamentoRepository.findByServico_Prestador_IdAndStatusIn(
-                prestadorId,
-                List.of(AgendamentoStatus.PENDING, AgendamentoStatus.CONCLUIDO)
-        );
-
-        // Mapeia horários ocupados por dia e hora
-        Set<String> horariosOcupados = agendamentosOcupados.stream()
-                .map(a -> a.getDataHora().getDayOfWeek().name() + "-" + a.getDataHora().toLocalTime().toString())
-                .collect(Collectors.toSet());
 
         List<HorariosPorDiaDTO> dias = new ArrayList<>();
 
@@ -112,10 +99,7 @@ public class ServicoService {
             LocalTime hora = d.getHoraInicio();
 
             while (hora.plusMinutes(duracao).isBefore(d.getHoraFim().plusSeconds(1))) {
-                String chave = d.getDiaSemana().name() + "-" + hora.toString();
-                if (!horariosOcupados.contains(chave)) {
-                    horarios.add(hora.toString());
-                }
+                horarios.add(hora.toString());
                 hora = hora.plusMinutes(duracao);
             }
 
@@ -127,10 +111,21 @@ public class ServicoService {
         return new HorariosDisponiveisDTO(servicoId, dias);
     }
 
+
     @Transactional
-    public Servico atualizarServico(String id, SaveServicoDTO dto) {
+    public Servico atualizarServico(Integer id, SaveServicoDTO dto) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
+
+        //Verifica se o usuário tem permissão para fazer essa operação
+        Usuario solicitante = usuarioRepository.findById(dto.getPrestadorId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        if (!servico.getPrestador().getId().equals(dto.getPrestadorId()) &&
+                !PermissaoUtils.isAdmin(solicitante)) {
+            throw new IllegalArgumentException("Você não tem permissão para editar este serviço.");
+        }
 
         // Verifica duplicação de título para o mesmo prestador, ignorando o próprio serviço atual
         boolean tituloDuplicado = servicoRepository
@@ -150,20 +145,15 @@ public class ServicoService {
         return servico;
     }
 
-
-    /// REMOVER REMOVER REMOVER REMOVER ????
     @Transactional
-    public void desativarServico(String id) {
-        Servico servico = servicoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
-
-        servico.setAtivo(false);
-    }
-
-    @Transactional
-    public void excluirServico(String servicoId, String prestadorId) {
+    public void excluirServico(Integer servicoId, Integer prestadorId) {
         Servico servico = servicoRepository.findById(servicoId)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
+
+        //Verifica se o usuário tem permissão para fazer essa operação
+        Usuario solicitante = usuarioRepository.findById(prestadorId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
         if (!servico.getPrestador().getId().equals(prestadorId)) {
             throw new IllegalArgumentException("Você não tem permissão para excluir este serviço.");

@@ -29,7 +29,7 @@ public class DisponibilidadeController {
     }
 
     @GetMapping("/prestador/{id}")
-    public ResponseEntity<List<DisponibilidadeDTO>> listarPorPrestador(@PathVariable("id") String prestadorId) {
+    public ResponseEntity<List<DisponibilidadeDTO>> listarPorPrestador(@PathVariable("id") Integer prestadorId) {
         var lista = disponibilidadeService
                 .listarPorPrestador(prestadorId)
                 .stream()

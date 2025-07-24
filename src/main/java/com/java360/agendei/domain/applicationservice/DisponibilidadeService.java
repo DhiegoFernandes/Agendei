@@ -2,9 +2,12 @@ package com.java360.agendei.domain.applicationservice;
 
 import com.java360.agendei.domain.entity.Disponibilidade;
 import com.java360.agendei.domain.entity.Prestador;
+import com.java360.agendei.domain.entity.Usuario;
+import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.SaveDisponibilidadeDTO;
+import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +24,7 @@ public class DisponibilidadeService {
     private final DisponibilidadeRepository disponibilidadeRepository;
     private final UsuarioRepository usuarioRepository;
 
-    public boolean prestadorEstaDisponivel(String prestadorId, LocalDateTime dataHora) {
+    public boolean prestadorEstaDisponivel(Integer prestadorId, LocalDateTime dataHora) {
         DayOfWeek diaSemana = dataHora.getDayOfWeek();
         var disponiveis = disponibilidadeRepository.findByPrestadorId(prestadorId);
 
@@ -36,6 +39,11 @@ public class DisponibilidadeService {
     public Disponibilidade cadastrarOuAtualizarDisponibilidade(SaveDisponibilidadeDTO dto) {
         Prestador prestador = (Prestador) usuarioRepository.findById(dto.getPrestadorId())
                 .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+
+        //Verifica se o usuário tem permissão para fazer essa operação
+        Usuario solicitante = usuarioRepository.findById(dto.getPrestadorId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
         if (dto.getHoraInicio().isAfter(dto.getHoraFim()) || dto.getHoraInicio().equals(dto.getHoraFim())) {
             throw new IllegalArgumentException("Horário de início deve ser antes do horário de fim.");
@@ -63,7 +71,7 @@ public class DisponibilidadeService {
         return disponibilidadeRepository.save(nova);
     }
 
-    public List<Disponibilidade> listarPorPrestador(String prestadorId) {
+    public List<Disponibilidade> listarPorPrestador(Integer prestadorId) {
         return disponibilidadeRepository.findByPrestadorId(prestadorId);
     }
 

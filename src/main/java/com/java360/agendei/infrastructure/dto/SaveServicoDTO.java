@@ -24,14 +24,14 @@ public class SaveServicoDTO {
     @Min(5)
     private int duracaoMinutos;
 
-    @NotBlank
-    private String prestadorId;
+    @NotNull
+    private Integer prestadorId;
 
     @NotNull
     private Boolean ativo;
 
-    @NotBlank
-    private String negocioId;
+    @NotNull
+    private Integer negocioId;
 
     @AssertTrue(message = "A duração deve ser positiva")
     public boolean isDuracaoValida() {

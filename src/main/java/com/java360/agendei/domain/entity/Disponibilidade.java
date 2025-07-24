@@ -18,8 +18,8 @@ import java.time.LocalTime;
 public class Disponibilidade {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

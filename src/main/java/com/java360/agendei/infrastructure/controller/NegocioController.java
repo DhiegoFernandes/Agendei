@@ -47,15 +47,15 @@ public class NegocioController {
     }
 
     @DeleteMapping("/sair/{prestadorId}")
-    public ResponseEntity<String> sairDoNegocio(@PathVariable String prestadorId) {
+    public ResponseEntity<String> sairDoNegocio(@PathVariable Integer prestadorId) {
         negocioService.sairDoNegocio(prestadorId);
         return ResponseEntity.ok("Prestador removido do negócio com sucesso.");
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> excluirNegocio(
-            @PathVariable String id,
-            @RequestParam String solicitanteId
+            @PathVariable Integer id,
+            @RequestParam Integer solicitanteId
     ) {
         negocioService.excluirNegocio(id, solicitanteId);
         return ResponseEntity.ok("Negócio excluído com sucesso.");
