@@ -25,7 +25,6 @@ public class ServicoController {
 
     @PostMapping
     public ResponseEntity<ServicoDTO> cadastrar(@RequestBody @Valid SaveServicoDTO dto) {
-        System.out.println("post");
         Servico servico = servicoService.cadastrarServico(dto);
         return ResponseEntity
                 .created(URI.create(PATH_SERVICOS + "/" + servico.getId()))
@@ -40,7 +39,6 @@ public class ServicoController {
 
     @GetMapping("/ativos")
     public ResponseEntity<List<ServicoDTO>> listarAtivos() {
-        System.out.println("get");
         List<ServicoDTO> lista = servicoService
                 .listarServicosAtivos()
                 .stream()
@@ -57,15 +55,14 @@ public class ServicoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ServicoDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid SaveServicoDTO dto) {
-        System.out.println("atualizar put");
         Servico servico = servicoService.atualizarServico(id, dto);
         return ResponseEntity.ok(ServicoDTO.fromEntity(servico));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirServico(@PathVariable Integer id, @RequestParam Integer prestadorId) {
-        servicoService.excluirServico(id, prestadorId);
-        return ResponseEntity.noContent().build(); // 204
+    public ResponseEntity<Void> excluirServico(@PathVariable Integer id) {
+        servicoService.excluirServico(id); // prestadorId vem do token
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/busca")

@@ -6,6 +6,7 @@ import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.*;
 import com.java360.agendei.infrastructure.dto.*;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
+import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,28 +29,24 @@ public class ServicoService {
     @Transactional
     public Servico cadastrarServico(SaveServicoDTO dto) {
 
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
-        Prestador prestador = (Prestador) usuarioRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
-
-        //Verifica se o usuário tem permissão para fazer essa operação
-        Usuario solicitante = usuarioRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+        Prestador prestador = (Prestador) usuario;
 
         if (prestador.getNegocio() == null) {
-            throw new IllegalArgumentException("Prestador não está associado a um negócio. Não é possível cadastrar o serviço.");
+            throw new IllegalArgumentException("Prestador não está associado a um negócio.");
         }
 
         Negocio negocio = negocioRepository.findById(dto.getNegocioId())
                 .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
 
-        if (prestador.getNegocio() == null || !prestador.getNegocio().getId().equals(dto.getNegocioId())) {
-            throw new IllegalArgumentException("O prestador não pertence ao negócio informado.");
+        if (!prestador.getNegocio().getId().equals(dto.getNegocioId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
+            throw new IllegalArgumentException("Você não pertence a este negócio.");
         }
 
         boolean tituloDuplicado = servicoRepository.existsByTituloAndNegocioId(dto.getTitulo(), dto.getNegocioId());
-
         if (tituloDuplicado) {
             throw new IllegalArgumentException("Já existe um serviço com esse título neste negócio.");
         }
@@ -114,22 +111,20 @@ public class ServicoService {
 
     @Transactional
     public Servico atualizarServico(Integer id, SaveServicoDTO dto) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
-        //Verifica se o usuário tem permissão para fazer essa operação
-        Usuario solicitante = usuarioRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
-
-        if (!servico.getPrestador().getId().equals(dto.getPrestadorId()) &&
-                !PermissaoUtils.isAdmin(solicitante)) {
-            throw new IllegalArgumentException("Você não tem permissão para editar este serviço.");
+        if (!servico.getPrestador().getId().equals(usuario.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
+            throw new SecurityException("Você não tem permissão para editar este serviço.");
         }
 
         // Verifica duplicação de título para o mesmo prestador, ignorando o próprio serviço atual
         boolean tituloDuplicado = servicoRepository
-                .existsByTituloAndPrestadorIdAndIdNot(dto.getTitulo(), dto.getPrestadorId(), id);
+                .existsByTituloAndPrestadorIdAndIdNot(dto.getTitulo(), usuario.getId(), id);
 
         if (tituloDuplicado) {
             throw new IllegalArgumentException("Já existe outro serviço com esse título.");
@@ -146,17 +141,16 @@ public class ServicoService {
     }
 
     @Transactional
-    public void excluirServico(Integer servicoId, Integer prestadorId) {
+    public void excluirServico(Integer servicoId) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
         Servico servico = servicoRepository.findById(servicoId)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
-        //Verifica se o usuário tem permissão para fazer essa operação
-        Usuario solicitante = usuarioRepository.findById(prestadorId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
-
-        if (!servico.getPrestador().getId().equals(prestadorId)) {
-            throw new IllegalArgumentException("Você não tem permissão para excluir este serviço.");
+        if (!servico.getPrestador().getId().equals(usuario.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
+            throw new SecurityException("Você não tem permissão para excluir este serviço.");
         }
 
         servico.setAtivo(false);

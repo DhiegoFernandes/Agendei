@@ -8,6 +8,7 @@ import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.SaveDisponibilidadeDTO;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
+import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,20 +38,17 @@ public class DisponibilidadeService {
 
     @Transactional
     public Disponibilidade cadastrarOuAtualizarDisponibilidade(SaveDisponibilidadeDTO dto) {
-        Prestador prestador = (Prestador) usuarioRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
-        //Verifica se o usuário tem permissão para fazer essa operação
-        Usuario solicitante = usuarioRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+        Prestador prestador = (Prestador) usuario;
 
         if (dto.getHoraInicio().isAfter(dto.getHoraFim()) || dto.getHoraInicio().equals(dto.getHoraFim())) {
             throw new IllegalArgumentException("Horário de início deve ser antes do horário de fim.");
         }
 
         Optional<Disponibilidade> existente = disponibilidadeRepository
-                .findByPrestadorIdAndDiaSemana(dto.getPrestadorId(), dto.getDiaSemana());
+                .findByPrestadorIdAndDiaSemana(prestador.getId(), dto.getDiaSemana());
 
         if (existente.isPresent()) {
             // Atualiza a disponibilidade existente
@@ -71,8 +69,12 @@ public class DisponibilidadeService {
         return disponibilidadeRepository.save(nova);
     }
 
-    public List<Disponibilidade> listarPorPrestador(Integer prestadorId) {
-        return disponibilidadeRepository.findByPrestadorId(prestadorId);
+    public List<Disponibilidade> listarPorPrestadorAutenticado() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        Prestador prestador = (Prestador) usuario;
+        return disponibilidadeRepository.findByPrestadorId(prestador.getId());
     }
 
 }

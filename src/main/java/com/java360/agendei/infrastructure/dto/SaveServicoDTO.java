@@ -25,9 +25,6 @@ public class SaveServicoDTO {
     private int duracaoMinutos;
 
     @NotNull
-    private Integer prestadorId;
-
-    @NotNull
     private Boolean ativo;
 
     @NotNull

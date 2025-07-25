@@ -14,7 +14,4 @@ public class ConviteNegocioDTO {
     @Email
     @NotBlank
     private String emailPrestador;
-
-    @NotNull
-    private Integer idDonoNegocio;
 }

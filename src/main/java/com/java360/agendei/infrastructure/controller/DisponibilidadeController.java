@@ -28,10 +28,10 @@ public class DisponibilidadeController {
                 .body(DisponibilidadeDTO.fromEntity(disponibilidade));
     }
 
-    @GetMapping("/prestador/{id}")
-    public ResponseEntity<List<DisponibilidadeDTO>> listarPorPrestador(@PathVariable("id") Integer prestadorId) {
+    @GetMapping
+    public ResponseEntity<List<DisponibilidadeDTO>> listarDoUsuarioLogado() {
         var lista = disponibilidadeService
-                .listarPorPrestador(prestadorId)
+                .listarPorPrestadorAutenticado()
                 .stream()
                 .map(DisponibilidadeDTO::fromEntity)
                 .toList();

@@ -46,18 +46,15 @@ public class NegocioController {
         return ResponseEntity.ok("Prestador associado ao negócio com sucesso.");
     }
 
-    @DeleteMapping("/sair/{prestadorId}")
-    public ResponseEntity<String> sairDoNegocio(@PathVariable Integer prestadorId) {
-        negocioService.sairDoNegocio(prestadorId);
+    @DeleteMapping("/sair")
+    public ResponseEntity<String> sairDoNegocio() {
+        negocioService.sairDoNegocio(); // ID obtido internamente via token
         return ResponseEntity.ok("Prestador removido do negócio com sucesso.");
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> excluirNegocio(
-            @PathVariable Integer id,
-            @RequestParam Integer solicitanteId
-    ) {
-        negocioService.excluirNegocio(id, solicitanteId);
+    public ResponseEntity<String> excluirNegocio(@PathVariable Integer id) {
+        negocioService.excluirNegocio(id); // ID do solicitante extraído via token
         return ResponseEntity.ok("Negócio excluído com sucesso.");
     }
 

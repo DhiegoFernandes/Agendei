@@ -12,6 +12,7 @@ import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.ConviteNegocioDTO;
 import com.java360.agendei.infrastructure.dto.CreateNegocioDTO;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
+import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,20 +29,17 @@ public class NegocioService {
 
     @Transactional
     public Negocio criarNegocio(CreateNegocioDTO dto) { // do dto vem os dados para criação
-        if (negocioRepository.existsByNome(dto.getNome())) {
-            throw new IllegalArgumentException("Nome do negócio já está em uso.");
-        }
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
-        Prestador prestador = (Prestador) usuarioRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
-
-        //Verifica se o usuário tem permissão para fazer essa operação
-        Usuario solicitante = usuarioRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+        Prestador prestador = (Prestador) usuario;
 
         if (prestador.getNegocio() != null) {
             throw new IllegalArgumentException("Você já está vinculado a um negócio. Saia do atual antes de criar outro.");
+        }
+
+        if (negocioRepository.existsByNome(dto.getNome())) {
+            throw new IllegalArgumentException("Nome do negócio já está em uso.");
         }
 
         Negocio negocio = Negocio.builder()
@@ -53,25 +51,26 @@ public class NegocioService {
 
         Negocio criado = negocioRepository.save(negocio);
 
-        // Associa o criador ao negócio
+        // Associa o criador ao negócio e persiste a atualização do prestador
         prestador.setNegocio(criado);
+        usuarioRepository.save(prestador); // ou prestadorRepository.save(prestador)
 
         return criado;
     }
 
     @Transactional
     public void convidarPrestadorParaNegocio(ConviteNegocioDTO dto) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
         Negocio negocio = negocioRepository.findById(dto.getNegocioId())
                 .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
 
-        // Busca o solicitante (quem está convidando) e valida se é o dono do negócio
-        Usuario solicitante = usuarioRepository.findById(dto.getIdDonoNegocio())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário solicitante não encontrado."));
-        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
-
-        if (!negocio.getCriador().getId().equals(solicitante.getId())) {
+        if (!negocio.getCriador().getId().equals(usuario.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
             throw new IllegalArgumentException("Apenas o dono do negócio pode convidar prestadores.");
         }
+
         // Busca o usuário pelo e-mail e valida se é um Prestador
         Usuario usuarioConvidado = usuarioRepository.findByEmail(dto.getEmailPrestador())
                 .orElseThrow(() -> new IllegalArgumentException("Prestador com esse e-mail não existe."));
@@ -88,11 +87,11 @@ public class NegocioService {
     }
 
     @Transactional
-    public void sairDoNegocio(Integer prestadorId) {
-        Prestador prestador = (Prestador) usuarioRepository.findById(prestadorId)
-                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+    public void sairDoNegocio() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
-        PermissaoUtils.validarPermissao(prestador, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+        Prestador prestador = (Prestador) usuario;
 
         Negocio negocio = prestador.getNegocio();
         if (negocio == null) {
@@ -104,24 +103,24 @@ public class NegocioService {
         }
 
         // Desativa os serviços ativos desse prestador nesse negócio
-        List<Servico> servicos = servicoRepository.findByPrestadorIdAndNegocioId(prestadorId, negocio.getId());
+        List<Servico> servicos = servicoRepository.findByPrestadorIdAndNegocioId(prestador.getId(), negocio.getId());
         servicos.forEach(s -> s.setAtivo(false));
 
-        // desvincula o prestador do negócio
+        // Desvincula o prestador do negócio
         prestador.setNegocio(null);
+        usuarioRepository.save(prestador); // ou prestadorRepository.save(prestador);
     }
 
     @Transactional
-    public void excluirNegocio(Integer negocioId, Integer solicitanteId) {
+    public void excluirNegocio(Integer negocioId) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
         Negocio negocio = negocioRepository.findById(negocioId)
                 .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
 
-        //Verifica se o usuário tem permissão para fazer essa operação
-        Usuario solicitante = usuarioRepository.findById(solicitanteId)
-                .orElseThrow(() -> new IllegalArgumentException("Solicitante não encontrado."));
-        PermissaoUtils.validarPermissao(solicitante, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
-
-        if (!negocio.getCriador().getId().equals(solicitanteId)) {
+        if (!negocio.getCriador().getId().equals(usuario.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
             throw new IllegalArgumentException("Apenas o dono do negócio pode excluí-lo.");
         }
 

@@ -1,10 +1,7 @@
 package com.java360.agendei.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @Table(name = "prestadores")
@@ -16,11 +13,8 @@ public class Prestador extends Usuario {
 
     @ManyToOne
     @JoinColumn(name = "negocio_id")
+    @EqualsAndHashCode.Exclude
     @ToString.Exclude // evita loop de referencia infinita
     private Negocio negocio;
-
-    // Exemplo: relação com serviços prestados
-    // @OneToMany(mappedBy = "prestador")
-    // private List<Servico> servicos;
 
 }

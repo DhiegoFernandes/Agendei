@@ -15,7 +15,7 @@ spring:
   jpa:
     show-sql: true #mostra sql no console
     hibernate:
-      ddl-auto: update  # ou "create-drop", "none", "validate", conforme seu ambiente
+      ddl-auto: create-drop  # update - padrão | create-drop - cria e deleta | none - nao faz nada no banco
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect

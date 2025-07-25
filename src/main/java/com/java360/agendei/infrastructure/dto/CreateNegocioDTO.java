@@ -13,6 +13,4 @@ public class CreateNegocioDTO {
     @NotBlank
     private String endereco;
 
-    @NotNull
-    private Integer prestadorId;
 }
