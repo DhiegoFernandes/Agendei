@@ -1,5 +1,6 @@
 package com.java360.agendei.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,5 +28,6 @@ public class Negocio {
     @ManyToOne(optional = false)
     @JoinColumn(name = "criador_id")
     @ToString.Exclude //evita loop de referencia infinita
+    @JsonIgnore
     private Prestador criador;
 }

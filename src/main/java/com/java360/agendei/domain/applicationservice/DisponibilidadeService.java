@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +46,9 @@ public class DisponibilidadeService {
 
         if (dto.getHoraInicio().isAfter(dto.getHoraFim()) || dto.getHoraInicio().equals(dto.getHoraFim())) {
             throw new IllegalArgumentException("Horário de início deve ser antes do horário de fim.");
+        }
+        if (dto.getHoraFim().isAfter(LocalTime.of(23, 59))) {
+            throw new IllegalArgumentException("Horário de fim deve ser até 23:59.");
         }
 
         Optional<Disponibilidade> existente = disponibilidadeRepository

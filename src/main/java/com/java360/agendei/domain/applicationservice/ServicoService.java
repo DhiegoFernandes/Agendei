@@ -90,9 +90,12 @@ public class ServicoService {
 
         for (Disponibilidade d : disponibilidades) {
             List<String> horarios = new ArrayList<>();
-            LocalTime hora = d.getHoraInicio();
 
-            while (hora.plusMinutes(duracao).isBefore(d.getHoraFim().plusSeconds(1))) {
+            LocalTime hora = d.getHoraInicio();
+            LocalTime limite = d.getHoraFim().minusMinutes(duracao);
+
+
+            while (!hora.isAfter(limite)) {
                 horarios.add(hora.toString());
                 hora = hora.plusMinutes(duracao);
             }

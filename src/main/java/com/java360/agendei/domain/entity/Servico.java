@@ -1,11 +1,9 @@
 package com.java360.agendei.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.java360.agendei.domain.model.CategoriaServico;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "servicos")
@@ -40,9 +38,12 @@ public class Servico {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "prestador_id")
+    @JsonIgnore
     private Prestador prestador;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "negocio_id", nullable = false)
+    @ToString.Exclude
+    @JsonIgnore
     private Negocio negocio;
 }
