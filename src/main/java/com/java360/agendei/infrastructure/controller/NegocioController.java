@@ -31,6 +31,8 @@ public class NegocioController {
                 .body(NegocioDTO.fromEntity(negocio));
     }
 
+
+    //TODO testar requisição, será necessaria para acessar o id_negocio para sair dele no front-end
     @GetMapping("/negocio")
     public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@RequestParam String nome) {
         var lista = servicoRepository.findByNegocio_NomeIgnoreCaseAndAtivoTrue(nome)

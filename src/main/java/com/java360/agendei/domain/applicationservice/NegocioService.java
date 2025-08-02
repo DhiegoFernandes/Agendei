@@ -63,10 +63,13 @@ public class NegocioService {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
-        Negocio negocio = negocioRepository.findById(dto.getNegocioId())
-                .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
+        Prestador prestador = (Prestador) usuario;
+        Negocio negocio = prestador.getNegocio();
+        if (negocio == null) {
+            throw new IllegalArgumentException("Você não está vinculado a nenhum negócio.");
+        }
 
-        if (!negocio.getCriador().getId().equals(usuario.getId()) &&
+        if (!negocio.getCriador().getId().equals(prestador.getId()) &&
                 !PermissaoUtils.isAdmin(usuario)) {
             throw new IllegalArgumentException("Apenas o dono do negócio pode convidar prestadores.");
         }
@@ -75,15 +78,16 @@ public class NegocioService {
         Usuario usuarioConvidado = usuarioRepository.findByEmail(dto.getEmailPrestador())
                 .orElseThrow(() -> new IllegalArgumentException("Prestador com esse e-mail não existe."));
 
-        if (!(usuarioConvidado instanceof Prestador prestador)) {
+        if (!(usuarioConvidado instanceof Prestador prestadorConvidado)) {
             throw new IllegalArgumentException("Usuário convidado não é um prestador.");
         }
-        if (prestador.getNegocio() != null) {
+        if (prestadorConvidado.getNegocio() != null) {
             throw new IllegalArgumentException("Prestador já está vinculado a outro negócio.");
         }
 
-        // Associa o prestador ao negócio
-        prestador.setNegocio(negocio);
+        // Associa o prestador convidado ao negócio
+        prestadorConvidado.setNegocio(negocio);
+        usuarioRepository.save(prestadorConvidado); // garantir persistência
     }
 
     @Transactional

@@ -8,9 +8,6 @@ import lombok.Data;
 @Data
 public class ConviteNegocioDTO {
 
-    @NotNull
-    private Integer negocioId;
-
     @Email
     @NotBlank
     private String emailPrestador;

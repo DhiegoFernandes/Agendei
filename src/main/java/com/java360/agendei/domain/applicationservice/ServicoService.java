@@ -38,15 +38,12 @@ public class ServicoService {
             throw new IllegalArgumentException("Prestador não está associado a um negócio.");
         }
 
-        Negocio negocio = negocioRepository.findById(dto.getNegocioId())
-                .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
-
-        if (!prestador.getNegocio().getId().equals(dto.getNegocioId()) &&
-                !PermissaoUtils.isAdmin(usuario)) {
-            throw new IllegalArgumentException("Você não pertence a este negócio.");
+        Negocio negocio = prestador.getNegocio();
+        if (negocio == null) {
+            throw new IllegalArgumentException("Você não está associado a um negócio.");
         }
 
-        boolean tituloDuplicado = servicoRepository.existsByTituloAndNegocioId(dto.getTitulo(), dto.getNegocioId());
+        boolean tituloDuplicado = servicoRepository.existsByTituloAndNegocioId(dto.getTitulo(), negocio.getId());
         if (tituloDuplicado) {
             throw new IllegalArgumentException("Já existe um serviço com esse título neste negócio.");
         }
