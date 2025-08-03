@@ -3,6 +3,7 @@ package com.java360.agendei.domain.applicationservice;
 import com.java360.agendei.domain.entity.Disponibilidade;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
+import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
@@ -26,15 +27,34 @@ public class DisponibilidadeService {
     private final DisponibilidadeRepository disponibilidadeRepository;
     private final UsuarioRepository usuarioRepository;
 
-    public boolean prestadorEstaDisponivel(Integer prestadorId, LocalDateTime dataHora) {
-        DayOfWeek diaSemana = dataHora.getDayOfWeek();
-        var disponiveis = disponibilidadeRepository.findByPrestadorId(prestadorId);
+    public boolean prestadorEstaDisponivel(Integer prestadorId, LocalDateTime inicioAgendamento, int duracaoMinutos) {
+        DayOfWeek diaSemana = inicioAgendamento.getDayOfWeek();
+        LocalTime inicio = inicioAgendamento.toLocalTime();
+        LocalTime fim = inicio.plusMinutes(duracaoMinutos);
 
-        return disponiveis.stream().anyMatch(d ->
-                d.getDiaSemana().name().equalsIgnoreCase(diaSemana.name()) &&
-                        !dataHora.toLocalTime().isBefore(d.getHoraInicio()) &&
-                        !dataHora.toLocalTime().isAfter(d.getHoraFim())
+        System.out.println("Validando disponibilidade para dia " + diaSemana + " - Início: " + inicio + " Fim: " + fim);
+        disponibilidadeRepository.findByPrestadorId(prestadorId).forEach(d ->
+                System.out.println("Disponibilidade: " + d.getDiaSemana() + " de " + d.getHoraInicio() + " até " + d.getHoraFim())
         );
+
+
+        return disponibilidadeRepository.findByPrestadorId(prestadorId).stream().anyMatch(d ->
+                d.getDiaSemana().equals(DiaSemanaDisponivel.valueOf(traduzirDiaDaSemana(diaSemana))) &&
+                        !inicio.isBefore(d.getHoraInicio()) &&
+                        !fim.isAfter(d.getHoraFim())
+        );
+    }
+
+    private String traduzirDiaDaSemana(DayOfWeek dia) {
+        return switch (dia) {
+            case SUNDAY -> "DOMINGO";
+            case MONDAY -> "SEGUNDA";
+            case TUESDAY -> "TERCA";
+            case WEDNESDAY -> "QUARTA";
+            case THURSDAY -> "QUINTA";
+            case FRIDAY -> "SEXTA";
+            case SATURDAY -> "SABADO";
+        };
     }
 
     @Transactional

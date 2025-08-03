@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class AgendamentoService {
@@ -20,6 +22,7 @@ public class AgendamentoService {
     private final AgendamentoRepository agendamentoRepository;
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final DisponibilidadeService disponibilidadeService;
 
     @Transactional
     public Agendamento criarAgendamento(CreateAgendamentoDTO dto) {
@@ -30,12 +33,20 @@ public class AgendamentoService {
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
         Prestador prestador = servico.getPrestador();
+        LocalDateTime inicio = dto.getDataHora();
+        LocalDateTime fim = inicio.plusMinutes(servico.getDuracaoMinutos());
+
+        boolean disponivel = disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), inicio, servico.getDuracaoMinutos());
+        if (!disponivel) {
+            throw new IllegalArgumentException("O prestador não está disponível nesse horário.");
+        }
+
         if (!prestador.getNegocio().isAtivo()) {
             throw new IllegalArgumentException("Negócio está inativo.");
         }
 
         // Impede agendamentos duplicados no mesmo horário
-        boolean ocupado = agendamentoRepository.existsByPrestadorIdAndDataHora(prestador.getId(), dto.getDataHora());
+        boolean ocupado = agendamentoRepository.existsByPrestadorIdAndDataHoraBetween(prestador.getId(), inicio, fim.minusMinutes(1));
         if (ocupado) {
             throw new IllegalArgumentException("Horário indisponível.");
         }
