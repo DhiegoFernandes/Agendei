@@ -20,10 +20,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**") // Permite POST no H2
+                        .disable()
+                )
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.disable()) // Permite exibição do H2 em frame
+                )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/usuarios/registrar", "/servicos/ativos", "/h2-console/**",
-                                "/servicos/*/horarios-disponiveis","/servicos/busca", "/servicos/negocio/**").permitAll()// Acesso livre nessas URI
+                        .requestMatchers(
+                                "/h2-console/**",
+                                "/auth/**",
+                                "/usuarios/registrar",
+                                "/servicos/ativos",
+                                "/servicos/*/horarios-disponiveis",
+                                "/servicos/busca",
+                                "/servicos/negocio/**"
+                        ).permitAll()// Acesso livre nessas URI
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
