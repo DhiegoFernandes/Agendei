@@ -33,6 +33,7 @@ public class Servico {
     @Column(nullable = false)
     private int duracaoMinutos;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean ativo = true;
 
