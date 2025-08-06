@@ -34,10 +34,12 @@ public class AgendamentoService {
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
         Prestador prestador = servico.getPrestador();
+        int duracao = servico.getDuracaoMinutos();
         LocalDateTime inicio = dto.getDataHora();
-        LocalDateTime fim = inicio.plusMinutes(servico.getDuracaoMinutos());
+        LocalDateTime fim = inicio.plusMinutes(duracao);
 
-        boolean disponivel = disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), inicio, servico.getDuracaoMinutos());
+        // Verifica se o prestador está disponível neste horário
+        boolean disponivel = disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), inicio, duracao);
         if (!disponivel) {
             throw new IllegalArgumentException("O prestador não está disponível nesse horário.");
         }
@@ -46,14 +48,19 @@ public class AgendamentoService {
             throw new IllegalArgumentException("Negócio está inativo.");
         }
 
-        // Impede agendamentos duplicados no mesmo horário
-        boolean ocupado = agendamentoRepository.existsByPrestadorIdAndDataHoraBetween(prestador.getId(), inicio, fim.minusMinutes(1));
-        if (ocupado) {
-            throw new IllegalArgumentException("Horário indisponível.");
+        // Verifica se há agendamento conflitante no mesmo intervalo
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+        boolean conflita = agendamentos.stream().anyMatch(ag -> {
+            LocalDateTime agInicio = ag.getDataHora();
+            LocalDateTime agFim = agInicio.plusMinutes(ag.getServico().getDuracaoMinutos());
+            return overlaps(inicio, fim, agInicio, agFim);
+        });
+
+        if (conflita) {
+            throw new IllegalArgumentException("Horário indisponível para o serviço selecionado.");
         }
 
-
-
+        // Cria o agendamento
         Agendamento agendamento = Agendamento.builder()
                 .cliente((Cliente) usuario)
                 .servico(servico)
@@ -64,6 +71,11 @@ public class AgendamentoService {
 
         return agendamentoRepository.save(agendamento);
     }
+
+    private boolean overlaps(LocalDateTime inicio1, LocalDateTime fim1, LocalDateTime inicio2, LocalDateTime fim2) {
+        return !(fim1.isBefore(inicio2) || inicio1.isAfter(fim2) || fim1.equals(inicio2) || inicio1.equals(fim2));
+    }
+
 
     @Transactional
     public void concluirAgendamento(Integer agendamentoId) {

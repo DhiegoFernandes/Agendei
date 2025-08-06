@@ -2,6 +2,7 @@ package com.java360.agendei.domain.applicationservice;
 
 import com.java360.agendei.domain.entity.*;
 import com.java360.agendei.domain.model.CategoriaServico;
+import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.*;
 import com.java360.agendei.infrastructure.dto.*;
@@ -11,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class ServicoService {
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final DisponibilidadeRepository disponibilidadeRepository;
+    private final AgendamentoRepository agendamentoRepository;
     private final NegocioRepository negocioRepository;
 
     @Transactional
@@ -73,6 +76,7 @@ public class ServicoService {
                 .toList();
     }
 
+    @Transactional
     public HorariosDisponiveisDTO listarHorariosPorServico(Integer servicoId) {
         Servico servico = servicoRepository.findById(servicoId)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
@@ -85,18 +89,28 @@ public class ServicoService {
         int duracao = servico.getDuracaoMinutos();
 
         List<Disponibilidade> disponibilidades = disponibilidadeRepository.findByPrestadorId(prestadorId);
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestadorId);
 
         List<HorariosPorDiaDTO> dias = new ArrayList<>();
 
         for (Disponibilidade d : disponibilidades) {
             List<String> horarios = new ArrayList<>();
-
             LocalTime hora = d.getHoraInicio();
             LocalTime limite = d.getHoraFim().minusMinutes(duracao);
 
-
             while (!hora.isAfter(limite)) {
-                horarios.add(hora.toString());
+                LocalTime inicio = hora;
+                LocalTime fim = hora.plusMinutes(duracao);
+
+                boolean conflita = agendamentos.stream().anyMatch(ag ->
+                        ag.getDataHora().getDayOfWeek().equals(toDayOfWeek(d.getDiaSemana())) &&
+                                overlaps(inicio, fim, ag.getDataHora().toLocalTime(), ag.getDataHora().toLocalTime().plusMinutes(ag.getServico().getDuracaoMinutos()))
+                );
+
+                if (!conflita) {
+                    horarios.add(inicio.toString());
+                }
+
                 hora = hora.plusMinutes(duracao);
             }
 
@@ -106,6 +120,22 @@ public class ServicoService {
         }
 
         return new HorariosDisponiveisDTO(servicoId, dias);
+    }
+
+    private boolean overlaps(LocalTime inicio1, LocalTime fim1, LocalTime inicio2, LocalTime fim2) {
+        return !(fim1.isBefore(inicio2) || inicio1.isAfter(fim2) || fim1.equals(inicio2) || inicio1.equals(fim2));
+    }
+
+    private DayOfWeek toDayOfWeek(DiaSemanaDisponivel dia) {
+        return switch (dia) {
+            case DOMINGO -> DayOfWeek.SUNDAY;
+            case SEGUNDA -> DayOfWeek.MONDAY;
+            case TERCA -> DayOfWeek.TUESDAY;
+            case QUARTA -> DayOfWeek.WEDNESDAY;
+            case QUINTA -> DayOfWeek.THURSDAY;
+            case SEXTA -> DayOfWeek.FRIDAY;
+            case SABADO -> DayOfWeek.SATURDAY;
+        };
     }
 
 
