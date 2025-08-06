@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +52,8 @@ public class AgendamentoService {
             throw new IllegalArgumentException("Horário indisponível.");
         }
 
+
+
         Agendamento agendamento = Agendamento.builder()
                 .cliente((Cliente) usuario)
                 .servico(servico)
@@ -75,5 +78,41 @@ public class AgendamentoService {
 
         agendamento.setStatus(StatusAgendamento.CONCLUIDO);
     }
+
+    public List<Agendamento> listarAgendamentosCliente() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
+
+        return agendamentoRepository.findByClienteId(usuario.getId());
+    }
+
+    public List<Agendamento> listarAgendamentosPrestador() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        return agendamentoRepository.findByPrestadorId(usuario.getId());
+    }
+
+    @Transactional
+    public void cancelarAgendamento(Integer agendamentoId) {
+        Usuario usuario = UsuarioAutenticado.get();
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado."));
+
+        boolean isCliente = agendamento.getCliente().getId().equals(usuario.getId());
+        boolean isPrestador = agendamento.getPrestador().getId().equals(usuario.getId());
+        boolean isAdmin = PermissaoUtils.isAdmin(usuario);
+
+        if (!isCliente && !isPrestador && !isAdmin) {
+            throw new SecurityException("Você não tem permissão para cancelar este agendamento.");
+        }
+
+        if (agendamento.getStatus() != StatusAgendamento.PENDENTE) {
+            throw new IllegalArgumentException("Apenas agendamentos pendentes podem ser cancelados.");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CANCELADO);
+    }
+
 }
 
