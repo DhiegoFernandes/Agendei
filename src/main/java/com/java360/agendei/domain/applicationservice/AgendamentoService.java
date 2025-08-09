@@ -30,6 +30,10 @@ public class AgendamentoService {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
 
+        if (!dto.getDataHora().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Não é possível criar agendamentos no passado.");
+        }
+
         Servico servico = servicoRepository.findById(dto.getServicoId())
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
@@ -90,10 +94,16 @@ public class AgendamentoService {
             throw new SecurityException("Sem permissão para alterar este agendamento.");
         }
 
-        // Só pode alterar se for para o futuro
+        // Só permite alterar agendamentos que ainda não aconteceram
         if (!agendamento.getDataHora().isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Não é possível alterar agendamentos passados.");
+            throw new IllegalArgumentException("Não é possível alterar agendamentos que já ocorreram.");
         }
+
+        //  Impede mover para o passado
+        if (!dto.getDataHora().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Não é possível alterar agendamentos para o passado.");
+        }
+
 
         Servico servico = servicoRepository.findById(dto.getServicoId())
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
