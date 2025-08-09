@@ -30,6 +30,21 @@ public class AgendamentoController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<AgendamentoDTO> atualizarAgendamento(
+            @PathVariable Integer id,
+            @RequestBody CreateAgendamentoDTO dto
+    ) {
+        Agendamento atualizado = agendamentoService.atualizarAgendamento(id, dto);
+        return ResponseEntity.ok(AgendamentoDTO.fromEntity(atualizado));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancelar(@PathVariable Integer id) {
+        agendamentoService.cancelarAgendamento(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/cliente")
     public ResponseEntity<List<AgendamentoDTO>> listarCliente() {
         var lista = agendamentoService.listarAgendamentosCliente()
@@ -46,12 +61,6 @@ public class AgendamentoController {
                 .map(AgendamentoDTO::fromEntity)
                 .toList();
         return ResponseEntity.ok(lista);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancelar(@PathVariable Integer id) {
-        agendamentoService.cancelarAgendamento(id);
-        return ResponseEntity.noContent().build();
     }
 
 }

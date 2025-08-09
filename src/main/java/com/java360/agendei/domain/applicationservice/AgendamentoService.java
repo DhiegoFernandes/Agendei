@@ -76,6 +76,63 @@ public class AgendamentoService {
         return !(fim1.isBefore(inicio2) || inicio1.isAfter(fim2) || fim1.equals(inicio2) || inicio1.equals(fim2));
     }
 
+    @Transactional
+    public Agendamento atualizarAgendamento(Integer agendamentoId, CreateAgendamentoDTO dto) {
+        Usuario usuario = UsuarioAutenticado.get();
+
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado."));
+
+        // Só o cliente dono, o prestador ou o admin podem alterar
+        if (!agendamento.getCliente().getId().equals(usuario.getId()) &&
+                !agendamento.getPrestador().getId().equals(usuario.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
+            throw new SecurityException("Sem permissão para alterar este agendamento.");
+        }
+
+        // Só pode alterar se for para o futuro
+        if (!agendamento.getDataHora().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Não é possível alterar agendamentos passados.");
+        }
+
+        Servico servico = servicoRepository.findById(dto.getServicoId())
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
+
+        Prestador prestador = servico.getPrestador();
+        int duracao = servico.getDuracaoMinutos();
+        LocalDateTime novoInicio = dto.getDataHora();
+        LocalDateTime novoFim = novoInicio.plusMinutes(duracao);
+
+        // Verifica disponibilidade
+        boolean disponivel = disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), novoInicio, duracao);
+        if (!disponivel) {
+            throw new IllegalArgumentException("O prestador não está disponível nesse horário.");
+        }
+
+        // Verifica conflitos (ignora o próprio agendamento)
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+        boolean conflita = agendamentos.stream()
+                .filter(ag -> !ag.getId().equals(agendamentoId))
+                .anyMatch(ag -> {
+                    LocalDateTime agInicio = ag.getDataHora();
+                    LocalDateTime agFim = agInicio.plusMinutes(ag.getServico().getDuracaoMinutos());
+                    return overlaps(novoInicio, novoFim, agInicio, agFim);
+                });
+
+        if (conflita) {
+            throw new IllegalArgumentException("Horário indisponível para o serviço selecionado.");
+        }
+
+        // Atualiza dados
+        agendamento.setServico(servico);
+        agendamento.setPrestador(prestador);
+        agendamento.setDataHora(dto.getDataHora());
+        agendamento.setStatus(StatusAgendamento.PENDENTE);
+
+        return agendamentoRepository.save(agendamento);
+    }
+
+
 
     @Transactional
     public void concluirAgendamento(Integer agendamentoId) {

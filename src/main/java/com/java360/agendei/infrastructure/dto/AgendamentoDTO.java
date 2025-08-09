@@ -12,22 +12,23 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class AgendamentoDTO {
+
     private Integer id;
-    private String nomeCliente;
-    private String nomePrestador;
-    private String tituloServico;
+    private String clienteNome;
+    private String prestadorNome;
+    private String servicoTitulo;
     private LocalDateTime dataHora;
     private StatusAgendamento status;
 
     public static AgendamentoDTO fromEntity(Agendamento agendamento) {
-        return AgendamentoDTO.builder()
-                .id(agendamento.getId())
-                .nomeCliente(agendamento.getCliente().getNome())
-                .nomePrestador(agendamento.getPrestador().getNome())
-                .tituloServico(agendamento.getServico().getTitulo())
-                .dataHora(agendamento.getDataHora())
-                .status(agendamento.getStatus())
-                .build();
+        return new AgendamentoDTO(
+                agendamento.getId(),
+                agendamento.getCliente().getNome(),
+                agendamento.getPrestador().getNome(),
+                agendamento.getServico().getTitulo(),
+                agendamento.getDataHora(),
+                agendamento.getStatus()
+        );
     }
 }
 
