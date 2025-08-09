@@ -10,23 +10,23 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ServicoRepository extends JpaRepository<Servico, String> {
+public interface ServicoRepository extends JpaRepository<Servico, Integer> {
 
     List<Servico> findAllByAtivoTrue();
 
-    boolean existsByTituloAndPrestadorId(String titulo, String prestadorId);
+    boolean existsByTituloAndPrestadorId(String titulo, Integer prestadorId);
 
-    boolean existsByTituloAndPrestadorIdAndIdNot(String titulo, String prestadorId, String id);
+    boolean existsByTituloAndPrestadorIdAndIdNot(String titulo, Integer prestadorId, Integer id);
 
     List<Servico> findByNegocio_NomeIgnoreCaseAndAtivoTrue(String nome);
 
-    boolean existsByTituloAndNegocioId(String titulo, String negocioId);
+    boolean existsByTituloAndNegocioId(String titulo, Integer negocioId);
 
-    List<Servico> findByPrestadorIdAndNegocioId(String prestadorId, String negocioId);
+    List<Servico> findByPrestadorIdAndNegocioId(Integer prestadorId, Integer negocioId);
 
-    List<Servico> findByNegocio_IdAndAtivoTrue(String negocioId);
+    List<Servico> findByNegocio_IdAndAtivoTrue(Integer negocioId);
 
-    List<Servico> findByPrestadorIdAndNegocioIdAndAtivoTrue(String prestadorId, String negocioId);
+    List<Servico> findByPrestadorIdAndNegocioIdAndAtivoTrue(Integer prestadorId, Integer negocioId);
 
     @Query("""
     SELECT s FROM Servico s

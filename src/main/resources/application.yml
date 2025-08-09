@@ -1,24 +1,63 @@
+# ===================================================================
+# CONFIGURAÇÕES COMPARTILHADAS (VÁLIDAS PARA TODOS OS PERFIS)
+# ===================================================================
 server:
   servlet:
     context-path: / #porta padrão
-  #port: 9090
+    #port: 9090
 spring:
-  jackson: #api que pega json e transforma em objeto
-    default-property-inclusion: non_null # Só insere na serialização propriedades nulas (o que for nulo não aparece pro usr)
   application:
     name: agendei
+  jackson:  #api que pega json e transforma em objeto
+    default-property-inclusion: non_null # Só insere na serialização propriedades nulas (o que for nulo não aparece pro usr)
+  jpa:
+    show-sql: true # Mostra o SQL gerado no console
+    hibernate:
+      ddl-auto: create-drop # update - padrão | create-drop - cria e deleta | none - nao faz nada no banco
+
+  # --- ATIVAÇÃO DO PERFIL PADRÃO ---
+  profiles:
+    active: dev # dev (h2) | prod (mysql)
+
+---
+# ===================================================================
+# PERFIL DE DESENVOLVIMENTO (dev) - USANDO H2 DATABASE
+# ===================================================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+  h2:
+    console:
+      enabled: true # Habilita o console do H2
+      path: /h2-console # Acessar o console: http://localhost:8080/h2-console | JDBC URL: jdbc:h2:mem:agendei
+  datasource:
+    url: jdbc:h2:mem:agendei
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect # Dialeto específico do H2
+
+---
+# ===================================================================
+# PERFIL DE PRODUÇÃO (prod) - USANDO MYSQL
+# ===================================================================
+spring:
+  config:
+    activate:
+      on-profile: prod
   datasource:
     url: jdbc:mysql://localhost:3306/agendei?useSSL=false&serverTimezone=UTC
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
-    show-sql: true #mostra sql no console
     hibernate:
-      ddl-auto: update  # ou "create-drop", "none", "validate", conforme seu ambiente
+      ddl-auto: update # Em produção, é mais seguro usar 'update' ou 'validate'
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
   h2:
     console:
-      enabled: false #ativa o h2-console na web localhost:8080/h2-console
+      enabled: false # desativa o h2-console na web localhost:8080/h2-console

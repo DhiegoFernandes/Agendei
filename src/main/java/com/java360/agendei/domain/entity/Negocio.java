@@ -1,5 +1,6 @@
 package com.java360.agendei.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,8 +13,8 @@ import lombok.*;
 public class Negocio {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false, length = 100, unique = true)
     private String nome;
@@ -21,11 +22,13 @@ public class Negocio {
     @Column(nullable = false, length = 200)
     private String endereco;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean ativo = true;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "criador_id")
     @ToString.Exclude //evita loop de referencia infinita
+    @JsonIgnore
     private Prestador criador;
 }

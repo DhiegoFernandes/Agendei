@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.java360</groupId>
-	<artifactId>pmanager</artifactId>
+	<artifactId>agendei</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>pmanager</name>
-	<description>project manajement system</description>
+	<name>agendei</name>
+	<description>Sistema de agendamento de servicos online</description>
 
 	<url/>
 	<licenses>

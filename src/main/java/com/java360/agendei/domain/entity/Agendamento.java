@@ -1,40 +1,39 @@
 package com.java360.agendei.domain.entity;
 
-import com.java360.agendei.domain.model.AgendamentoStatus;
+import com.java360.agendei.domain.model.StatusAgendamento;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "agendamento")
+@Table(name = "agendamentos")
 @Data
 @Builder
-@AllArgsConstructor //Construtor com todos argumentos
-@NoArgsConstructor // Construtor padrão (sem argumentos)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Agendamento {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne(optional = false)
+    private Cliente cliente;
+
+    @ManyToOne(optional = false)
+    private Servico servico;
+
+    @ManyToOne(optional = false)
+    private Prestador prestador;
 
     @Column(nullable = false)
     private LocalDateTime dataHora;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AgendamentoStatus status;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "cliente_id")
-    private Cliente cliente;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "servico_id")
-    private Servico servico;
-
+    private StatusAgendamento status;
 }

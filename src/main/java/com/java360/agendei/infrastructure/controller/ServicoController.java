@@ -25,7 +25,6 @@ public class ServicoController {
 
     @PostMapping
     public ResponseEntity<ServicoDTO> cadastrar(@RequestBody @Valid SaveServicoDTO dto) {
-        System.out.println("post");
         Servico servico = servicoService.cadastrarServico(dto);
         return ResponseEntity
                 .created(URI.create(PATH_SERVICOS + "/" + servico.getId()))
@@ -33,14 +32,13 @@ public class ServicoController {
     }
 
     @GetMapping("/{id}/horarios-disponiveis")
-    public ResponseEntity<HorariosDisponiveisDTO> listarHorarios(@PathVariable("id") String servicoId) {
+    public ResponseEntity<HorariosDisponiveisDTO> listarHorarios(@PathVariable("id") Integer servicoId) {
         var dto = servicoService.listarHorariosPorServico(servicoId);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/ativos")
     public ResponseEntity<List<ServicoDTO>> listarAtivos() {
-        System.out.println("get");
         List<ServicoDTO> lista = servicoService
                 .listarServicosAtivos()
                 .stream()
@@ -50,22 +48,21 @@ public class ServicoController {
     }
 
     @GetMapping("/negocio/{id}")
-    public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@PathVariable String id) {
+    public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@PathVariable Integer id) {
         List<ServicoDTO> lista = servicoService.listarServicosPorNegocio(id);
         return ResponseEntity.ok(lista);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ServicoDTO> atualizar(@PathVariable String id, @RequestBody @Valid SaveServicoDTO dto) {
-        System.out.println("atualizar put");
+    public ResponseEntity<ServicoDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid SaveServicoDTO dto) {
         Servico servico = servicoService.atualizarServico(id, dto);
         return ResponseEntity.ok(ServicoDTO.fromEntity(servico));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirServico(@PathVariable String id, @RequestParam String prestadorId) {
-        servicoService.excluirServico(id, prestadorId);
-        return ResponseEntity.noContent().build(); // 204
+    public ResponseEntity<Void> excluirServico(@PathVariable Integer id) {
+        servicoService.excluirServico(id); // prestadorId vem do token
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/busca")

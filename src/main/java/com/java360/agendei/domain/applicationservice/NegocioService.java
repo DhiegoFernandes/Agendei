@@ -4,12 +4,15 @@ import com.java360.agendei.domain.entity.Negocio;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Servico;
 import com.java360.agendei.domain.entity.Usuario;
+import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.NegocioRepository;
 import com.java360.agendei.domain.repository.PrestadorRepository;
 import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.ConviteNegocioDTO;
 import com.java360.agendei.infrastructure.dto.CreateNegocioDTO;
+import com.java360.agendei.infrastructure.security.PermissaoUtils;
+import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,60 +28,74 @@ public class NegocioService {
     private final PrestadorRepository prestadorRepository;
 
     @Transactional
-    public Negocio criarNegocio(CreateNegocioDTO dto) {
-        if (negocioRepository.existsByNome(dto.getNome())) {
-            throw new IllegalArgumentException("Nome do negócio já está em uso.");
-        }
+    public Negocio criarNegocio(CreateNegocioDTO dto) { // do dto vem os dados para criação
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
-        Prestador prestador = (Prestador) usuarioRepository.findById(dto.getPrestadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+        Prestador prestador = (Prestador) usuario;
 
         if (prestador.getNegocio() != null) {
             throw new IllegalArgumentException("Você já está vinculado a um negócio. Saia do atual antes de criar outro.");
+        }
+
+        if (negocioRepository.existsByNome(dto.getNome())) {
+            throw new IllegalArgumentException("Nome do negócio já está em uso.");
         }
 
         Negocio negocio = Negocio.builder()
                 .nome(dto.getNome())
                 .endereco(dto.getEndereco())
                 .criador(prestador)
+                .ativo(true) // Por padrão negocio é criado ativo
                 .build();
 
         Negocio criado = negocioRepository.save(negocio);
 
-        // Associa o criador ao negócio
+        // Associa o criador ao negócio e persiste a atualização do prestador
         prestador.setNegocio(criado);
+        usuarioRepository.save(prestador); // ou prestadorRepository.save(prestador)
 
         return criado;
     }
 
     @Transactional
     public void convidarPrestadorParaNegocio(ConviteNegocioDTO dto) {
-        Negocio negocio = negocioRepository.findById(dto.getNegocioId())
-                .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
-        Usuario usuario = usuarioRepository.findByEmail(dto.getEmailPrestador())
-                .orElseThrow(() -> new IllegalArgumentException("Prestador com esse e-mail não existe."));
-
-        if (!(usuario instanceof Prestador prestador)) {
-            throw new IllegalArgumentException("Usuário não é um prestador.");
+        Prestador prestador = (Prestador) usuario;
+        Negocio negocio = prestador.getNegocio();
+        if (negocio == null) {
+            throw new IllegalArgumentException("Você não está vinculado a nenhum negócio.");
         }
-        if (!negocio.getCriador().getId().equals(dto.getIdDonoNegocio())) {
+
+        if (!negocio.getCriador().getId().equals(prestador.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
             throw new IllegalArgumentException("Apenas o dono do negócio pode convidar prestadores.");
         }
-        if (prestador.getNegocio() != null) {
+
+        // Busca o usuário pelo e-mail e valida se é um Prestador
+        Usuario usuarioConvidado = usuarioRepository.findByEmail(dto.getEmailPrestador())
+                .orElseThrow(() -> new IllegalArgumentException("Prestador com esse e-mail não existe."));
+
+        if (!(usuarioConvidado instanceof Prestador prestadorConvidado)) {
+            throw new IllegalArgumentException("Usuário convidado não é um prestador.");
+        }
+        if (prestadorConvidado.getNegocio() != null) {
             throw new IllegalArgumentException("Prestador já está vinculado a outro negócio.");
         }
 
-
-
-        // Associa o prestador ao negócio
-        prestador.setNegocio(negocio);
+        // Associa o prestador convidado ao negócio
+        prestadorConvidado.setNegocio(negocio);
+        usuarioRepository.save(prestadorConvidado); // garantir persistência
     }
 
     @Transactional
-    public void sairDoNegocio(String prestadorId) {
-        Prestador prestador = (Prestador) usuarioRepository.findById(prestadorId)
-                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+    public void sairDoNegocio() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        Prestador prestador = (Prestador) usuario;
 
         Negocio negocio = prestador.getNegocio();
         if (negocio == null) {
@@ -90,19 +107,24 @@ public class NegocioService {
         }
 
         // Desativa os serviços ativos desse prestador nesse negócio
-        List<Servico> servicos = servicoRepository.findByPrestadorIdAndNegocioId(prestadorId, negocio.getId());
+        List<Servico> servicos = servicoRepository.findByPrestadorIdAndNegocioId(prestador.getId(), negocio.getId());
         servicos.forEach(s -> s.setAtivo(false));
 
-        // desvincula o prestador do negócio
+        // Desvincula o prestador do negócio
         prestador.setNegocio(null);
+        usuarioRepository.save(prestador); // ou prestadorRepository.save(prestador);
     }
 
     @Transactional
-    public void excluirNegocio(String negocioId, String solicitanteId) {
+    public void excluirNegocio(Integer negocioId) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
         Negocio negocio = negocioRepository.findById(negocioId)
                 .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
 
-        if (!negocio.getCriador().getId().equals(solicitanteId)) {
+        if (!negocio.getCriador().getId().equals(usuario.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
             throw new IllegalArgumentException("Apenas o dono do negócio pode excluí-lo.");
         }
 

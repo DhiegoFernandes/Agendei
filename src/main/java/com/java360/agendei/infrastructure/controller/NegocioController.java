@@ -31,6 +31,8 @@ public class NegocioController {
                 .body(NegocioDTO.fromEntity(negocio));
     }
 
+
+    //TODO testar requisição, será necessaria para acessar o id_negocio para sair dele no front-end
     @GetMapping("/negocio")
     public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@RequestParam String nome) {
         var lista = servicoRepository.findByNegocio_NomeIgnoreCaseAndAtivoTrue(nome)
@@ -46,18 +48,15 @@ public class NegocioController {
         return ResponseEntity.ok("Prestador associado ao negócio com sucesso.");
     }
 
-    @DeleteMapping("/sair/{prestadorId}")
-    public ResponseEntity<String> sairDoNegocio(@PathVariable String prestadorId) {
-        negocioService.sairDoNegocio(prestadorId);
+    @DeleteMapping("/sair")
+    public ResponseEntity<String> sairDoNegocio() {
+        negocioService.sairDoNegocio(); // ID obtido internamente via token
         return ResponseEntity.ok("Prestador removido do negócio com sucesso.");
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> excluirNegocio(
-            @PathVariable String id,
-            @RequestParam String solicitanteId
-    ) {
-        negocioService.excluirNegocio(id, solicitanteId);
+    public ResponseEntity<String> excluirNegocio(@PathVariable Integer id) {
+        negocioService.excluirNegocio(id); // ID do solicitante extraído via token
         return ResponseEntity.ok("Negócio excluído com sucesso.");
     }
 

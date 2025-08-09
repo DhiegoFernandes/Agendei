@@ -6,16 +6,16 @@ import lombok.Data;
 
 @Data
 public class ServicoDTO {
-    private final String id;
+    private final Integer id;
     private final String titulo;
     private final String descricao;
     private final CategoriaServico categoria;
     private final double valor;
     private final int duracaoMinutos;
     private final boolean ativo;
-    private final String prestadorId;
+    private final Integer prestadorId;
     private final String nomePrestador;
-    private final String negocioId;
+    private final Integer negocioId;
 
     public static ServicoDTO fromEntity(Servico servico) {
         return new ServicoDTO(

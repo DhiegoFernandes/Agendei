@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class NegocioDTO {
-    private final String id;
+    private final Integer id;
     private final String nome;
     private final String endereco;
 

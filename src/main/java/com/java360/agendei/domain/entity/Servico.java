@@ -1,11 +1,9 @@
 package com.java360.agendei.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.java360.agendei.domain.model.CategoriaServico;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "servicos")
@@ -16,8 +14,8 @@ import lombok.NoArgsConstructor;
 public class Servico {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false, length = 100)
     private String titulo;
@@ -35,14 +33,18 @@ public class Servico {
     @Column(nullable = false)
     private int duracaoMinutos;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean ativo = true;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "prestador_id")
+    @JsonIgnore
     private Prestador prestador;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "negocio_id", nullable = false)
+    @ToString.Exclude
+    @JsonIgnore
     private Negocio negocio;
 }

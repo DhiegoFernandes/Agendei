@@ -8,11 +8,11 @@ import java.time.LocalTime;
 
 @Data
 public class DisponibilidadeDTO {
-    private final String id;
+    private final Integer id;
     private final DiaSemanaDisponivel diaSemana;
     private final LocalTime horaInicio;
     private final LocalTime horaFim;
-    private final String prestadorId;
+    private final Integer prestadorId;
     private final String nomePrestador;
 
     public static DisponibilidadeDTO fromEntity(Disponibilidade d) {

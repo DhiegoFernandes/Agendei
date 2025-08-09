@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class HorariosDisponiveisDTO {
-    private String servicoId;
+    private Integer servicoId;
     private List<HorariosPorDiaDTO> diasDisponiveis;
 
 }

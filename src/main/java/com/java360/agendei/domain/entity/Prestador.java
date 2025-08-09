@@ -1,11 +1,10 @@
 package com.java360.agendei.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "prestadores")
 @Data
@@ -16,11 +15,9 @@ public class Prestador extends Usuario {
 
     @ManyToOne
     @JoinColumn(name = "negocio_id")
+    //@EqualsAndHashCode.Exclude
     @ToString.Exclude // evita loop de referencia infinita
+    @JsonIgnore
     private Negocio negocio;
-
-    // Exemplo: relação com serviços prestados
-    // @OneToMany(mappedBy = "prestador")
-    // private List<Servico> servicos;
 
 }

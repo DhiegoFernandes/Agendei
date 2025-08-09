@@ -1,103 +1,197 @@
 package com.java360.agendei.domain.applicationservice;
 
-import com.java360.agendei.domain.entity.Agendamento;
-import com.java360.agendei.domain.entity.Cliente;
-import com.java360.agendei.domain.entity.Servico;
-import com.java360.agendei.domain.exception.AgendamentoNotFoundException;
-import com.java360.agendei.domain.exception.InvalidAgendamentoStatusException;
-import com.java360.agendei.domain.model.AgendamentoStatus;
+import com.java360.agendei.domain.entity.*;
+import com.java360.agendei.domain.model.PerfilUsuario;
+import com.java360.agendei.domain.model.StatusAgendamento;
 import com.java360.agendei.domain.repository.AgendamentoRepository;
-import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
-import com.java360.agendei.infrastructure.dto.SaveAgendamentoDTO;
+import com.java360.agendei.infrastructure.dto.CreateAgendamentoDTO;
+import com.java360.agendei.infrastructure.security.PermissaoUtils;
+import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j //Anotação para chamar o logger, se necessario
 public class AgendamentoService {
 
     private final AgendamentoRepository agendamentoRepository;
-    private final UsuarioRepository usuarioRepository;
     private final ServicoRepository servicoRepository;
+    private final UsuarioRepository usuarioRepository;
     private final DisponibilidadeService disponibilidadeService;
 
     @Transactional
-    public Agendamento createAgendamento(SaveAgendamentoDTO dto) {
-        Cliente cliente = (Cliente) usuarioRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado."));
+    public Agendamento criarAgendamento(CreateAgendamentoDTO dto) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
+
+        if (!dto.getDataHora().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Não é possível criar agendamentos no passado.");
+        }
 
         Servico servico = servicoRepository.findById(dto.getServicoId())
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
-        // Valida se prestador atende nesse horário
-        if (!disponibilidadeService.prestadorEstaDisponivel(servico.getPrestador().getId(), dto.getDataHora())) {
-            throw new IllegalArgumentException("O prestador não atende neste horário.");
+        Prestador prestador = servico.getPrestador();
+        int duracao = servico.getDuracaoMinutos();
+        LocalDateTime inicio = dto.getDataHora();
+        LocalDateTime fim = inicio.plusMinutes(duracao);
+
+        // Verifica se o prestador está disponível neste horário
+        boolean disponivel = disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), inicio, duracao);
+        if (!disponivel) {
+            throw new IllegalArgumentException("O prestador não está disponível nesse horário.");
         }
 
-        // Verifica se o horário já está ocupado (pendente ou concluído)
-        boolean ocupado = agendamentoRepository.existsByServico_Prestador_IdAndDataHoraAndStatusIn(
-                servico.getPrestador().getId(),
-                dto.getDataHora(),
-                List.of(AgendamentoStatus.PENDING, AgendamentoStatus.CONCLUIDO)
-        );
-
-        if (ocupado) {
-            throw new IllegalArgumentException("O horário já está ocupado.");
+        if (!prestador.getNegocio().isAtivo()) {
+            throw new IllegalArgumentException("Negócio está inativo.");
         }
 
+        // Verifica se há agendamento conflitante no mesmo intervalo
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+        boolean conflita = agendamentos.stream().anyMatch(ag -> {
+            LocalDateTime agInicio = ag.getDataHora();
+            LocalDateTime agFim = agInicio.plusMinutes(ag.getServico().getDuracaoMinutos());
+            return overlaps(inicio, fim, agInicio, agFim);
+        });
+
+        if (conflita) {
+            throw new IllegalArgumentException("Horário indisponível para o serviço selecionado.");
+        }
+
+        // Cria o agendamento
         Agendamento agendamento = Agendamento.builder()
-                .cliente(cliente)
+                .cliente((Cliente) usuario)
                 .servico(servico)
+                .prestador(prestador)
                 .dataHora(dto.getDataHora())
-                .status(AgendamentoStatus.PENDING)
+                .status(StatusAgendamento.PENDENTE)
                 .build();
 
         return agendamentoRepository.save(agendamento);
     }
 
-/*
-    public Agendamento loadAgendamento(String agendamentoId){
-        //retorna o agendamento OU gera exceção
-        return agendamentoRepository.
-                findById(agendamentoId)
-                .orElseThrow(() -> new AgendamentoNotFoundException(agendamentoId)); //Exceção do pacote exception
+    private boolean overlaps(LocalDateTime inicio1, LocalDateTime fim1, LocalDateTime inicio2, LocalDateTime fim2) {
+        return !(fim1.isBefore(inicio2) || inicio1.isAfter(fim2) || fim1.equals(inicio2) || inicio1.equals(fim2));
     }
 
     @Transactional
-    public void deleteAgendamento(String agendamentoId){
-        Agendamento agendamento = loadAgendamento(agendamentoId);
-        agendamentoRepository.delete(agendamento);
-    }
+    public Agendamento atualizarAgendamento(Integer agendamentoId, CreateAgendamentoDTO dto) {
+        Usuario usuario = UsuarioAutenticado.get();
 
-    @Transactional
-    public Agendamento updateAgendamento(String agendamentoId, SaveAgendamentoDataDTO saveAgendamentoData){
-        Agendamento agendamento = loadAgendamento(agendamentoId); //carrega o agendamento
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado."));
 
-        agendamento.setName(saveAgendamentoData.getName());
-        agendamento.setDescription(saveAgendamentoData.getDescription());
-        agendamento.setInitialDate(saveAgendamentoData.getInitialDate());
-        agendamento.setFinalDate(saveAgendamentoData.getFinalDate());
-        //Converte o status para enum
-        agendamento.setStatus(convertToAgendamentoStatus(saveAgendamentoData.getStatus()));
-
-        return agendamento;
-    }
-
-    private AgendamentoStatus convertToAgendamentoStatus(String statusStr){
-        try {
-            return AgendamentoStatus.valueOf(statusStr); // valueOf converte a string no Enum
-        } catch (IllegalArgumentException | NullPointerException e){ // Se Enum invalido ou nulo cai na exceção
-            throw new InvalidAgendamentoStatusException(statusStr); // chama ex do pacote exception
+        // Só o cliente dono, o prestador ou o admin podem alterar
+        if (!agendamento.getCliente().getId().equals(usuario.getId()) &&
+                !agendamento.getPrestador().getId().equals(usuario.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
+            throw new SecurityException("Sem permissão para alterar este agendamento.");
         }
 
+        // Só permite alterar agendamentos que ainda não aconteceram
+        if (!agendamento.getDataHora().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Não é possível alterar agendamentos que já ocorreram.");
+        }
+
+        //  Impede mover para o passado
+        if (!dto.getDataHora().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Não é possível alterar agendamentos para o passado.");
+        }
+
+
+        Servico servico = servicoRepository.findById(dto.getServicoId())
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
+
+        Prestador prestador = servico.getPrestador();
+        int duracao = servico.getDuracaoMinutos();
+        LocalDateTime novoInicio = dto.getDataHora();
+        LocalDateTime novoFim = novoInicio.plusMinutes(duracao);
+
+        // Verifica disponibilidade
+        boolean disponivel = disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), novoInicio, duracao);
+        if (!disponivel) {
+            throw new IllegalArgumentException("O prestador não está disponível nesse horário.");
+        }
+
+        // Verifica conflitos (ignora o próprio agendamento)
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+        boolean conflita = agendamentos.stream()
+                .filter(ag -> !ag.getId().equals(agendamentoId))
+                .anyMatch(ag -> {
+                    LocalDateTime agInicio = ag.getDataHora();
+                    LocalDateTime agFim = agInicio.plusMinutes(ag.getServico().getDuracaoMinutos());
+                    return overlaps(novoInicio, novoFim, agInicio, agFim);
+                });
+
+        if (conflita) {
+            throw new IllegalArgumentException("Horário indisponível para o serviço selecionado.");
+        }
+
+        // Atualiza dados
+        agendamento.setServico(servico);
+        agendamento.setPrestador(prestador);
+        agendamento.setDataHora(dto.getDataHora());
+        agendamento.setStatus(StatusAgendamento.PENDENTE);
+
+        return agendamentoRepository.save(agendamento);
     }
-*/
+
+
+
+    @Transactional
+    public void concluirAgendamento(Integer agendamentoId) {
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado."));
+
+        Usuario usuario = UsuarioAutenticado.get();
+        if (!agendamento.getPrestador().getId().equals(usuario.getId()) &&
+                !PermissaoUtils.isAdmin(usuario)) {
+            throw new SecurityException("Sem permissão para concluir este agendamento.");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CONCLUIDO);
+    }
+
+    public List<Agendamento> listarAgendamentosCliente() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
+
+        return agendamentoRepository.findByClienteId(usuario.getId());
+    }
+
+    public List<Agendamento> listarAgendamentosPrestador() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        return agendamentoRepository.findByPrestadorId(usuario.getId());
+    }
+
+    @Transactional
+    public void cancelarAgendamento(Integer agendamentoId) {
+        Usuario usuario = UsuarioAutenticado.get();
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado."));
+
+        boolean isCliente = agendamento.getCliente().getId().equals(usuario.getId());
+        boolean isPrestador = agendamento.getPrestador().getId().equals(usuario.getId());
+        boolean isAdmin = PermissaoUtils.isAdmin(usuario);
+
+        if (!isCliente && !isPrestador && !isAdmin) {
+            throw new SecurityException("Você não tem permissão para cancelar este agendamento.");
+        }
+
+        if (agendamento.getStatus() != StatusAgendamento.PENDENTE) {
+            throw new IllegalArgumentException("Apenas agendamentos pendentes podem ser cancelados.");
+        }
+
+        agendamento.setStatus(StatusAgendamento.CANCELADO);
+    }
 
 }
+
