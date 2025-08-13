@@ -1,4 +1,16 @@
 package com.java360.agendei.infrastructure.dto;
 
-public class AvaliacaoDTO {
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class AvaliacaoNegocioDTO {
+    private Integer id;
+    private Integer negocioId;
+    private String nomeNegocio;
+    private Integer clienteId;
+    private String nomeCliente;
+    private int nota;
+    private String comentario;
 }

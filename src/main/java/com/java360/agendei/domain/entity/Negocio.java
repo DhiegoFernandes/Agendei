@@ -26,6 +26,9 @@ public class Negocio {
     @Column(nullable = false)
     private boolean ativo = true;
 
+    @Column(name = "nota_media")
+    private Double notaMedia;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "criador_id")
     @ToString.Exclude //evita loop de referencia infinita
