@@ -3,6 +3,7 @@ package com.java360.agendei.infrastructure.controller;
 import com.java360.agendei.domain.applicationservice.ServicoService;
 import com.java360.agendei.domain.entity.Servico;
 import com.java360.agendei.domain.model.CategoriaServico;
+import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import com.java360.agendei.infrastructure.dto.HorariosDisponiveisDTO;
 import com.java360.agendei.infrastructure.dto.SaveServicoDTO;
 import com.java360.agendei.infrastructure.dto.ServicoDTO;
@@ -69,10 +70,13 @@ public class ServicoController {
     public ResponseEntity<List<ServicoDTO>> buscar(
             @RequestParam(required = false) String titulo,
             @RequestParam(required = false) CategoriaServico categoria,
-            @RequestParam(required = false) String nomePrestador
+            @RequestParam(required = false) String nomePrestador,
+            @RequestParam(required = false) DiaSemanaDisponivel diaSemana
     ) {
-        var resultado = servicoService.buscarServicos(titulo, categoria, nomePrestador);
+        var resultado = servicoService.buscarServicos(titulo, categoria, nomePrestador, diaSemana);
         return ResponseEntity.ok(resultado);
     }
+
+
 
 }

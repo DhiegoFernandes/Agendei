@@ -12,6 +12,7 @@ public class DisponibilidadeDTO {
     private final DiaSemanaDisponivel diaSemana;
     private final LocalTime horaInicio;
     private final LocalTime horaFim;
+    private final boolean ativo;
     private final Integer prestadorId;
     private final String nomePrestador;
 
@@ -21,6 +22,7 @@ public class DisponibilidadeDTO {
                 d.getDiaSemana(),
                 d.getHoraInicio(),
                 d.getHoraFim(),
+                d.isAtivo(),
                 d.getPrestador().getId(),
                 d.getPrestador().getNome()
         );

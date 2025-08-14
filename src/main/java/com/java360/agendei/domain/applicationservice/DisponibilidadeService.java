@@ -7,6 +7,7 @@ import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.infrastructure.dto.DisponibilidadeDTO;
 import com.java360.agendei.infrastructure.dto.SaveDisponibilidadeDTO;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
@@ -38,11 +39,14 @@ public class DisponibilidadeService {
         );
 
 
-        return disponibilidadeRepository.findByPrestadorId(prestadorId).stream().anyMatch(d ->
-                d.getDiaSemana().equals(DiaSemanaDisponivel.valueOf(traduzirDiaDaSemana(diaSemana))) &&
-                        !inicio.isBefore(d.getHoraInicio()) &&
-                        !fim.isAfter(d.getHoraFim())
-        );
+        return disponibilidadeRepository.findByPrestadorId(prestadorId).stream()
+                .filter(Disponibilidade::isAtivo) // só considera dias ativos
+                .anyMatch(d ->
+                        d.getDiaSemana().equals(DiaSemanaDisponivel.valueOf(traduzirDiaDaSemana(diaSemana))) &&
+                                !inicio.isBefore(d.getHoraInicio()) &&
+                                !fim.isAfter(d.getHoraFim())
+                );
+
     }
 
     private String traduzirDiaDaSemana(DayOfWeek dia) {
@@ -58,7 +62,7 @@ public class DisponibilidadeService {
     }
 
     @Transactional
-    public Disponibilidade cadastrarOuAtualizarDisponibilidade(SaveDisponibilidadeDTO dto) {
+    public DisponibilidadeDTO cadastrarOuAtualizarDisponibilidade(SaveDisponibilidadeDTO dto) {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
@@ -71,27 +75,41 @@ public class DisponibilidadeService {
             throw new IllegalArgumentException("Horário de fim deve ser até 23:59.");
         }
 
-        Optional<Disponibilidade> existente = disponibilidadeRepository
-                .findByPrestadorIdAndDiaSemana(prestador.getId(), dto.getDiaSemana());
+        Disponibilidade disponibilidade = disponibilidadeRepository
+                .findByPrestadorIdAndDiaSemana(prestador.getId(), dto.getDiaSemana())
+                .map(d -> {
+                    d.setHoraInicio(dto.getHoraInicio());
+                    d.setHoraFim(dto.getHoraFim());
+                    return d;
+                })
+                .orElseGet(() -> Disponibilidade.builder()
+                        .prestador(prestador)
+                        .diaSemana(dto.getDiaSemana())
+                        .horaInicio(dto.getHoraInicio())
+                        .horaFim(dto.getHoraFim())
+                        .build()
+                );
 
-        if (existente.isPresent()) {
-            // Atualiza a disponibilidade existente
-            Disponibilidade d = existente.get();
-            d.setHoraInicio(dto.getHoraInicio());
-            d.setHoraFim(dto.getHoraFim());
-            return d;
-        }
+        Disponibilidade salvo = disponibilidadeRepository.save(disponibilidade);
 
-        // Nova disponibilidade
-        Disponibilidade nova = Disponibilidade.builder()
-                .prestador(prestador)
-                .diaSemana(dto.getDiaSemana())
-                .horaInicio(dto.getHoraInicio())
-                .horaFim(dto.getHoraFim())
-                .build();
-
-        return disponibilidadeRepository.save(nova);
+        return DisponibilidadeDTO.fromEntity(salvo);
     }
+
+    @Transactional
+    public Disponibilidade alterarStatusDia(DiaSemanaDisponivel dia, boolean ativo) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        Prestador prestador = (Prestador) usuario;
+
+        Disponibilidade disponibilidade = disponibilidadeRepository
+                .findByPrestadorIdAndDiaSemana(prestador.getId(), dia)
+                .orElseThrow(() -> new IllegalArgumentException("Dia não cadastrado para este prestador."));
+
+        disponibilidade.setAtivo(ativo);
+        return disponibilidade;
+    }
+
 
     public List<Disponibilidade> listarPorPrestadorAutenticado() {
         Usuario usuario = UsuarioAutenticado.get();

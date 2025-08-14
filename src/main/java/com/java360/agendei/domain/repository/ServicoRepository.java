@@ -2,6 +2,7 @@ package com.java360.agendei.domain.repository;
 
 import com.java360.agendei.domain.entity.Servico;
 import com.java360.agendei.domain.model.CategoriaServico;
+import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,19 +30,25 @@ public interface ServicoRepository extends JpaRepository<Servico, Integer> {
     List<Servico> findByPrestadorIdAndNegocioIdAndAtivoTrue(Integer prestadorId, Integer negocioId);
 
     @Query("""
-    SELECT s FROM Servico s
-    WHERE s.ativo = true
-    AND (:titulo IS NULL OR LOWER(s.titulo) LIKE LOWER(CONCAT('%', :titulo, '%')))
-    AND (:categoria IS NULL OR s.categoria = :categoria)
-    AND (:nomePrestador IS NULL OR LOWER(s.prestador.nome) LIKE LOWER(CONCAT('%', :nomePrestador, '%')))
-    """)
+        SELECT s FROM Servico s
+        JOIN s.prestador p
+        WHERE s.ativo = true
+        AND (:titulo IS NULL OR LOWER(s.titulo) LIKE LOWER(CONCAT('%', :titulo, '%')))
+        AND (:categoria IS NULL OR s.categoria = :categoria)
+        AND (:nomePrestador IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :nomePrestador, '%')))
+        AND EXISTS (
+            SELECT 1 FROM Disponibilidade d
+            WHERE d.prestador.id = p.id
+            AND (:diaSemana IS NULL OR d.diaSemana = :diaSemana)
+            AND d.ativo = true
+        )
+        """)
     List<Servico> buscarServicos(
             @Param("titulo") String titulo,
             @Param("categoria") CategoriaServico categoria,
-            @Param("nomePrestador") String nomePrestador
+            @Param("nomePrestador") String nomePrestador,
+            @Param("diaSemana") DiaSemanaDisponivel diaSemana
     );
-
-
 
 
 }

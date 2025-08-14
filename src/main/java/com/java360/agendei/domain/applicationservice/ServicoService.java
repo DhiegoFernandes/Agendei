@@ -187,8 +187,8 @@ public class ServicoService {
     }
 
 
-    public List<ServicoDTO> buscarServicos(String titulo, CategoriaServico categoria, String nomePrestador) {
-        List<Servico> resultados = servicoRepository.buscarServicos(titulo, categoria, nomePrestador);
+    public List<ServicoDTO> buscarServicos(String titulo, CategoriaServico categoria, String nomePrestador, DiaSemanaDisponivel diaSemana) {
+        List<Servico> resultados = servicoRepository.buscarServicos(titulo, categoria, nomePrestador, diaSemana);
         return resultados.stream().map(ServicoDTO::fromEntity).toList();
     }
 }

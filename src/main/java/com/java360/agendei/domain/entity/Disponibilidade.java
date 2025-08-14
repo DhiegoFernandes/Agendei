@@ -34,4 +34,7 @@ public class Disponibilidade {
     @ManyToOne(optional = false)
     @JoinColumn(name = "prestador_id")
     private Prestador prestador;
+
+    @Column(nullable = false)
+    private boolean ativo = true;
 }
