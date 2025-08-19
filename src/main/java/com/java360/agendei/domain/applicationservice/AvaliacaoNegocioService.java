@@ -41,27 +41,39 @@ public class AvaliacaoNegocioService {
             throw new IllegalArgumentException("Só é possível avaliar após a conclusão do agendamento.");
         }
 
-        if (avaliacaoRepository.existsByAgendamentoId(dto.getAgendamentoId())) {
-            throw new IllegalArgumentException("Este agendamento já foi avaliado.");
-        }
-
         if (dto.getNota() < 0 || dto.getNota() > 5) {
             throw new IllegalArgumentException("A nota deve estar entre 0 e 5.");
         }
 
-        AvaliacaoNegocio avaliacao = AvaliacaoNegocio.builder()
-                .negocio(agendamento.getPrestador().getNegocio())
-                .cliente(cliente)
-                .agendamento(agendamento)
-                .nota(dto.getNota())
-                .comentario(dto.getComentario())
-                .dataAvaliacao(LocalDateTime.now())
-                .build();
+        // Verifica se o cliente já avaliou o negócio
+        AvaliacaoNegocio avaliacaoExistente = avaliacaoRepository
+                .findByNegocioIdAndClienteId(
+                        agendamento.getPrestador().getNegocio().getId(),
+                        cliente.getId()
+                )
+                .orElse(null);
+
+        AvaliacaoNegocio avaliacao;
+        if (avaliacaoExistente != null) {
+            // Atualiza avaliação existente
+            avaliacaoExistente.setNota(dto.getNota());
+            avaliacaoExistente.setComentario(dto.getComentario());
+            avaliacaoExistente.setDataAvaliacao(LocalDateTime.now());
+            avaliacao = avaliacaoExistente;
+        } else {
+            // Cria nova avaliação
+            avaliacao = AvaliacaoNegocio.builder()
+                    .negocio(agendamento.getPrestador().getNegocio())
+                    .cliente(cliente)
+                    .agendamento(agendamento)
+                    .nota(dto.getNota())
+                    .comentario(dto.getComentario())
+                    .dataAvaliacao(LocalDateTime.now())
+                    .build();
+        }
 
         AvaliacaoNegocio salva = avaliacaoRepository.save(avaliacao);
 
-
-        //TODO TROCAR POR UM SELECT SQL?
         atualizarMediaNegocio(salva.getNegocio());
 
         return AvaliacaoNegocioDTO.builder()
