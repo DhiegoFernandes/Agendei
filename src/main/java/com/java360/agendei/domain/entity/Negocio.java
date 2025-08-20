@@ -22,6 +22,9 @@ public class Negocio {
     @Column(nullable = false, length = 200)
     private String endereco;
 
+    @Column(nullable = false, length = 9)
+    private String cep;
+
     @Builder.Default
     @Column(nullable = false)
     private boolean ativo = true;

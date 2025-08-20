@@ -15,7 +15,6 @@ public class Prestador extends Usuario {
 
     @ManyToOne
     @JoinColumn(name = "negocio_id")
-    //@EqualsAndHashCode.Exclude
     @ToString.Exclude // evita loop de referencia infinita
     @JsonIgnore
     private Negocio negocio;

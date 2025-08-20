@@ -28,7 +28,15 @@ public class UsuarioService {
 
         Usuario usuario;
         switch (dto.getPerfil()) {
-            case CLIENTE -> usuario = new Cliente();
+            case CLIENTE -> {
+                Cliente cliente = new Cliente();
+                if (dto.getCep() == null || dto.getEndereco() == null) {
+                    throw new IllegalArgumentException("CEP e Endereço são obrigatórios para clientes.");
+                }
+                cliente.setCep(dto.getCep());
+                cliente.setEndereco(dto.getEndereco());
+                usuario = cliente;
+            }
             case PRESTADOR -> usuario = new Prestador();
             case ADMIN -> usuario = new Administrador();
             default -> throw new IllegalArgumentException("Perfil inválido.");
@@ -41,7 +49,7 @@ public class UsuarioService {
         usuario.setAtivo(true);
         usuario.setPerfil(dto.getPerfil());
 
-        System.out.println("Usuário criado: " + usuario);
         return usuarioRepository.save(usuario);
     }
+
 }

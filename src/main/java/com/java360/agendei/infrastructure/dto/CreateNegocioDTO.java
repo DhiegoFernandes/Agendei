@@ -13,4 +13,7 @@ public class CreateNegocioDTO {
     @NotBlank
     private String endereco;
 
+    @NotBlank
+    private String cep;
+
 }

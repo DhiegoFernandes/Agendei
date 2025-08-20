@@ -45,6 +45,7 @@ public class NegocioService {
         Negocio negocio = Negocio.builder()
                 .nome(dto.getNome())
                 .endereco(dto.getEndereco())
+                .cep(dto.getCep())
                 .criador(prestador)
                 .ativo(true) // Por padrão negocio é criado ativo
                 .build();

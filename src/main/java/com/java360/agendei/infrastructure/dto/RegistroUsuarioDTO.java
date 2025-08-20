@@ -25,4 +25,8 @@ public class RegistroUsuarioDTO {
 
     @NotNull
     private PerfilUsuario perfil;
+
+    private String cep;
+
+    private String endereco;
 }
