@@ -1,5 +1,6 @@
 package com.java360.agendei.infrastructure.dto;
 
+import com.java360.agendei.domain.entity.Cliente;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import lombok.Data;
@@ -12,13 +13,28 @@ public class UsuarioDTO {
     private final String telefone;
     private final PerfilUsuario perfil;
 
+    // Apenas para cliente
+    private final String cep;
+    private final String endereco;
+
     public static UsuarioDTO fromEntity(Usuario usuario) {
+        String cep = null;
+        String endereco = null;
+
+        // Se for cliente
+        if (usuario instanceof Cliente cliente) {
+            cep = cliente.getCep();
+            endereco = cliente.getEndereco();
+        }
+
         return new UsuarioDTO(
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
                 usuario.getTelefone(),
-                usuario.getPerfil()
+                usuario.getPerfil(),
+                cep,
+                endereco
         );
     }
 }
