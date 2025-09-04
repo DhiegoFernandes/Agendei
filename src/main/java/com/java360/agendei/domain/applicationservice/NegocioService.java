@@ -1,9 +1,6 @@
 package com.java360.agendei.domain.applicationservice;
 
-import com.java360.agendei.domain.entity.Negocio;
-import com.java360.agendei.domain.entity.Prestador;
-import com.java360.agendei.domain.entity.Servico;
-import com.java360.agendei.domain.entity.Usuario;
+import com.java360.agendei.domain.entity.*;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.NegocioRepository;
 import com.java360.agendei.domain.repository.PrestadorRepository;
@@ -146,26 +143,46 @@ public class NegocioService {
     }
 
     @Transactional
-    public List<NegocioBuscaDTO> buscarNegociosProximos(String cepCliente) {
-        LatLngDTO clienteLatLng = geocodingService.buscarLatLongPorCep(cepCliente);
+    public List<NegocioBuscaDTO> buscarNegociosProximos() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
+
+        if (!(usuario instanceof Cliente cliente)) {
+            throw new IllegalArgumentException("Somente clientes podem buscar negócios próximos.");
+        }
+
+        if (cliente.getCep() == null || cliente.getCep().isBlank()) {
+            throw new IllegalArgumentException("Cliente não possui CEP cadastrado.");
+        }
+
+        // Busca latitude/longitude do cliente
+        LatLngDTO clienteLatLng = geocodingService.buscarLatLongPorCep(cliente.getCep());
 
         List<Negocio> negocios = negocioRepository.findAll()
                 .stream()
                 .filter(Negocio::isAtivo)
+                .filter(n -> n.getCep() != null && !n.getCep().isBlank())
                 .toList();
 
         return negocios.stream()
                 .map(n -> {
-                    LatLngDTO negocioLatLng = geocodingService.buscarLatLongPorCep(n.getCep());
-                    double distancia = DistanciaUtils.calcularDistancia(
-                            clienteLatLng.getLat(), clienteLatLng.getLng(),
-                            negocioLatLng.getLat(), negocioLatLng.getLng()
-                    );
-                    return NegocioBuscaDTO.fromEntity(n, distancia);
+                    try {
+                        LatLngDTO negocioLatLng = geocodingService.buscarLatLongPorCep(n.getCep());
+                        double distancia = DistanciaUtils.calcularDistancia(
+                                clienteLatLng.getLat(), clienteLatLng.getLng(),
+                                negocioLatLng.getLat(), negocioLatLng.getLng()
+                        );
+                        return NegocioBuscaDTO.fromEntity(n, distancia);
+                    } catch (Exception e) {
+                        // ignora negócios com cep inválido
+                        return null;
+                    }
                 })
+                .filter(dto -> dto != null)
                 .sorted((a, b) -> Double.compare(a.getDistanciaKm(), b.getDistanciaKm()))
                 .toList();
     }
+
 
 
 

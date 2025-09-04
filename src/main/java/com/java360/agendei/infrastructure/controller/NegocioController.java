@@ -58,8 +58,8 @@ public class NegocioController {
     }
 
     @GetMapping("/busca-negocios")
-    public ResponseEntity<List<NegocioBuscaDTO>> buscarNegociosProximos(@RequestParam String cepCliente) {
-        var lista = negocioService.buscarNegociosProximos(cepCliente);
+    public ResponseEntity<List<NegocioBuscaDTO>> buscarNegociosProximos() {
+        var lista = negocioService.buscarNegociosProximos();
         return ResponseEntity.ok(lista);
     }
 
