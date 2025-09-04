@@ -35,6 +35,7 @@ public class Disponibilidade {
     @JoinColumn(name = "prestador_id")
     private Prestador prestador;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean ativo = true;
 }

@@ -3,10 +3,7 @@ package com.java360.agendei.infrastructure.controller;
 import com.java360.agendei.domain.applicationservice.NegocioService;
 import com.java360.agendei.domain.entity.Negocio;
 import com.java360.agendei.domain.repository.ServicoRepository;
-import com.java360.agendei.infrastructure.dto.ConviteNegocioDTO;
-import com.java360.agendei.infrastructure.dto.CreateNegocioDTO;
-import com.java360.agendei.infrastructure.dto.NegocioDTO;
-import com.java360.agendei.infrastructure.dto.ServicoDTO;
+import com.java360.agendei.infrastructure.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -59,5 +56,12 @@ public class NegocioController {
         negocioService.excluirNegocio(id); // ID do solicitante extraído via token
         return ResponseEntity.ok("Negócio excluído com sucesso.");
     }
+
+    @GetMapping("/busca-negocios")
+    public ResponseEntity<List<NegocioBuscaDTO>> buscarNegociosProximos(@RequestParam String cepCliente) {
+        var lista = negocioService.buscarNegociosProximos(cepCliente);
+        return ResponseEntity.ok(lista);
+    }
+
 
 }

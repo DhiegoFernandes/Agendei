@@ -11,8 +11,12 @@ import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.ConviteNegocioDTO;
 import com.java360.agendei.infrastructure.dto.CreateNegocioDTO;
+import com.java360.agendei.infrastructure.dto.LatLngDTO;
+import com.java360.agendei.infrastructure.dto.NegocioBuscaDTO;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
+import com.java360.agendei.infrastructure.util.DistanciaUtils;
+import com.java360.agendei.infrastructure.util.GeocodingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,7 @@ public class NegocioService {
     private final UsuarioRepository usuarioRepository;
     private final ServicoRepository servicoRepository;
     private final PrestadorRepository prestadorRepository;
+    private final GeocodingService geocodingService;
 
     @Transactional
     public Negocio criarNegocio(CreateNegocioDTO dto) { // do dto vem os dados para criação
@@ -139,6 +144,29 @@ public class NegocioService {
         List<Prestador> prestadores = prestadorRepository.findByNegocio_Id(negocioId);
         prestadores.forEach(p -> p.setNegocio(null));
     }
+
+    @Transactional
+    public List<NegocioBuscaDTO> buscarNegociosProximos(String cepCliente) {
+        LatLngDTO clienteLatLng = geocodingService.buscarLatLongPorCep(cepCliente);
+
+        List<Negocio> negocios = negocioRepository.findAll()
+                .stream()
+                .filter(Negocio::isAtivo)
+                .toList();
+
+        return negocios.stream()
+                .map(n -> {
+                    LatLngDTO negocioLatLng = geocodingService.buscarLatLongPorCep(n.getCep());
+                    double distancia = DistanciaUtils.calcularDistancia(
+                            clienteLatLng.getLat(), clienteLatLng.getLng(),
+                            negocioLatLng.getLat(), negocioLatLng.getLng()
+                    );
+                    return NegocioBuscaDTO.fromEntity(n, distancia);
+                })
+                .sorted((a, b) -> Double.compare(a.getDistanciaKm(), b.getDistanciaKm()))
+                .toList();
+    }
+
 
 
 

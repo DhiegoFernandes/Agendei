@@ -17,7 +17,7 @@ spring:
 
   # --- ATIVAÇÃO DO PERFIL PADRÃO ---
   profiles:
-    active: dev # dev (h2) | prod (mysql)
+    active: prod # dev (h2) | prod (mysql)
 
 ---
 # ===================================================================
