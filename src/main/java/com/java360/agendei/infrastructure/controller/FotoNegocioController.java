@@ -2,6 +2,8 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.FotoNegocioService;
 import com.java360.agendei.domain.entity.FotoNegocio;
+import com.java360.agendei.domain.repository.FotoNegocioRepository;
+import com.java360.agendei.infrastructure.dto.FotoNegocioDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import java.util.List;
 public class FotoNegocioController {
 
     private final FotoNegocioService fotoNegocioService;
+    private final FotoNegocioRepository fotoNegocioRepository;
 
     // Upload de foto
     @PostMapping("/{id}/fotos")
@@ -27,25 +30,37 @@ public class FotoNegocioController {
 
     // Listar fotos
     @GetMapping("/{id}/fotos")
-    public ResponseEntity<List<FotoNegocio>> listarFotos(@PathVariable Integer id) {
-        List<FotoNegocio> fotos = fotoNegocioService.listarFotosDoNegocio(id);
+    public ResponseEntity<List<FotoNegocioDTO>> listarFotos(@PathVariable Integer id) {
+        List<FotoNegocioDTO> fotos = fotoNegocioService.listarFotosDoNegocioDTO(id);
         return ResponseEntity.ok(fotos);
     }
 
     // Acessar foto individual
     @GetMapping("/{negocioId}/fotos/{fotoId}")
-    public ResponseEntity<byte[]> getFoto(@PathVariable Integer negocioId,
-                                          @PathVariable Integer fotoId) {
-        FotoNegocio foto = fotoNegocioService.listarFotosDoNegocio(negocioId).stream()
-                .filter(f -> f.getId().equals(fotoId))
-                .findFirst()
+    public ResponseEntity<byte[]> baixarFoto(@PathVariable Integer negocioId,
+                                             @PathVariable Integer fotoId) {
+        FotoNegocio foto = fotoNegocioRepository.findById(fotoId)
                 .orElseThrow(() -> new IllegalArgumentException("Foto não encontrada"));
 
-        String contentType = foto.getNomeArquivo().endsWith(".png") ? MediaType.IMAGE_PNG_VALUE : MediaType.IMAGE_JPEG_VALUE;
+        if (!foto.getNegocio().getId().equals(negocioId)) {
+            throw new IllegalArgumentException("Foto não pertence a este negócio");
+        }
+
+        String contentType = foto.getNomeArquivo().endsWith(".png") ?
+                MediaType.IMAGE_PNG_VALUE : MediaType.IMAGE_JPEG_VALUE;
 
         return ResponseEntity.ok()
                 .header("Content-Disposition", "inline; filename=\"" + foto.getNomeArquivo() + "\"")
                 .contentType(MediaType.parseMediaType(contentType))
                 .body(foto.getImagem());
     }
+
+
+    @DeleteMapping("/{negocioId}/fotos/{fotoId}")
+    public ResponseEntity<String> deletarFoto(@PathVariable Integer negocioId,
+                                              @PathVariable Integer fotoId) {
+        fotoNegocioService.deletarFoto(negocioId, fotoId);
+        return ResponseEntity.ok("Foto deletada com sucesso.");
+    }
+
 }
