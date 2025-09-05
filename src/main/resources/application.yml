@@ -14,17 +14,6 @@ spring:
     show-sql: true # Mostra o SQL gerado no console
     hibernate:
       ddl-auto: create-drop # update - padrão | create-drop - cria e deleta | none - nao faz nada no banco
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: agendeiofficial@gmail.com
-    password: agendei8785
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
 
 
   # --- ATIVAÇÃO DO PERFIL PADRÃO ---
