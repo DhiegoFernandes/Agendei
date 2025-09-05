@@ -28,6 +28,17 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateResetToken(Integer userId) {
+        long RESET_EXPIRATION = 1000 * 60 * 15; // 15 minutos
+        return Jwts.builder()
+                .setSubject(userId.toString())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + RESET_EXPIRATION))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+
     public Integer extractUserId(String token) {
         String subject = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
