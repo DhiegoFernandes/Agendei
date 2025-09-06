@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
-import static com.java360.agendei.infrastructure.controller.RestConstants.PATH_SERVICOS;
 
 @RestController
-@RequestMapping(PATH_SERVICOS)
+@RequestMapping("/servicos")
 @RequiredArgsConstructor
 public class ServicoController {
 
@@ -28,7 +27,7 @@ public class ServicoController {
     public ResponseEntity<ServicoDTO> cadastrar(@RequestBody @Valid SaveServicoDTO dto) {
         Servico servico = servicoService.cadastrarServico(dto);
         return ResponseEntity
-                .created(URI.create(PATH_SERVICOS + "/" + servico.getId()))
+                .created(URI.create("/servicos" + "/" + servico.getId()))
                 .body(ServicoDTO.fromEntity(servico));
     }
 

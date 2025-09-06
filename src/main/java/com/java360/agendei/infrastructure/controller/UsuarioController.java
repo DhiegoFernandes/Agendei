@@ -12,10 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.java360.agendei.infrastructure.controller.RestConstants.PATH_USUARIOS;
-
 @RestController
-@RequestMapping(PATH_USUARIOS)
+@RequestMapping("/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
     private final UsuarioService usuarioService;

@@ -1,6 +1,7 @@
 package com.java360.agendei.domain.repository;
 
 import com.java360.agendei.domain.entity.Agendamento;
+import com.java360.agendei.domain.model.StatusAgendamento;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,5 +22,14 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Intege
     boolean existeAgendamentoNoHorario(@Param("prestadorId") Integer prestadorId,
                                        @Param("inicio") LocalDateTime inicio,
                                        @Param("fim") LocalDateTime fim);
+
+    List<Agendamento> findByPrestadorIdAndDataHoraBetween(Integer prestadorId,
+                                                          LocalDateTime inicio,
+                                                          LocalDateTime fim);
+
+    List<Agendamento> findByPrestadorIdAndStatusAndDataHoraBetween(Integer prestadorId,
+                                                                   StatusAgendamento status,
+                                                                   LocalDateTime inicio,
+                                                                   LocalDateTime fim);
 
 }
