@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class CreateAgendamentoDTO {
+    private Integer idAgendamento; // null = criar, != null = atualizar
+
     @NotNull
     private Integer servicoId;
 

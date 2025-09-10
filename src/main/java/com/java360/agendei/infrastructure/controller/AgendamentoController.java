@@ -19,8 +19,8 @@ public class AgendamentoController {
     private final AgendamentoService agendamentoService;
 
     @PostMapping
-    public ResponseEntity<AgendamentoDTO> criar(@RequestBody @Valid CreateAgendamentoDTO dto) {
-        var agendamento = agendamentoService.criarAgendamento(dto);
+    public ResponseEntity<AgendamentoDTO> salvarOuAtualizar(@RequestBody @Valid CreateAgendamentoDTO dto) {
+        Agendamento agendamento = agendamentoService.salvarOuAtualizarAgendamento(dto);
         return ResponseEntity.ok(AgendamentoDTO.fromEntity(agendamento));
     }
 
@@ -28,15 +28,6 @@ public class AgendamentoController {
     public ResponseEntity<Void> concluir(@PathVariable Integer id) {
         agendamentoService.concluirAgendamento(id);
         return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<AgendamentoDTO> atualizarAgendamento(
-            @PathVariable Integer id,
-            @RequestBody CreateAgendamentoDTO dto
-    ) {
-        Agendamento atualizado = agendamentoService.atualizarAgendamento(id, dto);
-        return ResponseEntity.ok(AgendamentoDTO.fromEntity(atualizado));
     }
 
     @DeleteMapping("/{id}")
