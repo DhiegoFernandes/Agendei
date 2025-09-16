@@ -34,7 +34,6 @@ public interface ServicoRepository extends JpaRepository<Servico, Integer> {
         JOIN s.prestador p
         WHERE s.ativo = true
         AND (:titulo IS NULL OR LOWER(s.titulo) LIKE LOWER(CONCAT('%', :titulo, '%')))
-        AND (:categoria IS NULL OR s.categoria = :categoria)
         AND (:nomePrestador IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :nomePrestador, '%')))
         AND EXISTS (
             SELECT 1 FROM Disponibilidade d
@@ -45,7 +44,6 @@ public interface ServicoRepository extends JpaRepository<Servico, Integer> {
         """)
     List<Servico> buscarServicos(
             @Param("titulo") String titulo,
-            @Param("categoria") CategoriaServico categoria,
             @Param("nomePrestador") String nomePrestador,
             @Param("diaSemana") DiaSemanaDisponivel diaSemana
     );

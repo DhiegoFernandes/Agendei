@@ -9,7 +9,6 @@ public class ServicoDTO {
     private final Integer id;
     private final String titulo;
     private final String descricao;
-    private final CategoriaServico categoria;
     private final double valor;
     private final int duracaoMinutos;
     private final boolean ativo;
@@ -22,7 +21,6 @@ public class ServicoDTO {
                 servico.getId(),
                 servico.getTitulo(),
                 servico.getDescricao(),
-                servico.getCategoria(),
                 servico.getValor(),
                 servico.getDuracaoMinutos(),
                 servico.isAtivo(),

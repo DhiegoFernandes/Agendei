@@ -68,11 +68,10 @@ public class ServicoController {
     @GetMapping("/busca")
     public ResponseEntity<List<ServicoDTO>> buscar(
             @RequestParam(required = false) String titulo,
-            @RequestParam(required = false) CategoriaServico categoria,
             @RequestParam(required = false) String nomePrestador,
             @RequestParam(required = false) DiaSemanaDisponivel diaSemana
     ) {
-        var resultado = servicoService.buscarServicos(titulo, categoria, nomePrestador, diaSemana);
+        var resultado = servicoService.buscarServicos(titulo, nomePrestador, diaSemana);
         return ResponseEntity.ok(resultado);
     }
 

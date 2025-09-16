@@ -23,10 +23,6 @@ public class Servico {
     @Column(length = 255)
     private String descricao;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CategoriaServico categoria;
-
     @Column(nullable = false)
     private double valor;
 

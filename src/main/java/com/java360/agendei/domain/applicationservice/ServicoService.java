@@ -54,7 +54,6 @@ public class ServicoService {
         Servico servico = Servico.builder()
                 .titulo(dto.getTitulo())
                 .descricao(dto.getDescricao())
-                .categoria(dto.getCategoria())
                 .valor(dto.getValor())
                 .duracaoMinutos(dto.getDuracaoMinutos())
                 .ativo(true)
@@ -162,7 +161,6 @@ public class ServicoService {
 
         servico.setTitulo(dto.getTitulo());
         servico.setDescricao(dto.getDescricao());
-        servico.setCategoria(dto.getCategoria());
         servico.setValor(dto.getValor());
         servico.setDuracaoMinutos(dto.getDuracaoMinutos());
         servico.setAtivo(dto.getAtivo());
@@ -187,8 +185,8 @@ public class ServicoService {
     }
 
 
-    public List<ServicoDTO> buscarServicos(String titulo, CategoriaServico categoria, String nomePrestador, DiaSemanaDisponivel diaSemana) {
-        List<Servico> resultados = servicoRepository.buscarServicos(titulo, categoria, nomePrestador, diaSemana);
+    public List<ServicoDTO> buscarServicos(String titulo, String nomePrestador, DiaSemanaDisponivel diaSemana) {
+        List<Servico> resultados = servicoRepository.buscarServicos(titulo, nomePrestador, diaSemana);
         return resultados.stream().map(ServicoDTO::fromEntity).toList();
     }
 }
