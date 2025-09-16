@@ -2,6 +2,7 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.NegocioService;
 import com.java360.agendei.domain.entity.Negocio;
+import com.java360.agendei.domain.model.CategoriaNegocio;
 import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.infrastructure.dto.*;
 import jakarta.validation.Valid;
@@ -58,8 +59,11 @@ public class NegocioController {
     }
 
     @GetMapping("/busca-negocios")
-    public ResponseEntity<List<NegocioBuscaDTO>> buscarNegociosProximos() {
-        var lista = negocioService.buscarNegociosProximos();
+    public ResponseEntity<List<NegocioBuscaDTO>> buscarNegociosProximos(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) CategoriaNegocio categoria
+    ) {
+        var lista = negocioService.buscarNegociosProximos(nome, categoria);
         return ResponseEntity.ok(lista);
     }
 

@@ -1,6 +1,7 @@
 package com.java360.agendei.domain.applicationservice;
 
 import com.java360.agendei.domain.entity.*;
+import com.java360.agendei.domain.model.CategoriaNegocio;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.NegocioRepository;
 import com.java360.agendei.domain.repository.PrestadorRepository;
@@ -48,6 +49,7 @@ public class NegocioService {
                 .nome(dto.getNome())
                 .endereco(dto.getEndereco())
                 .cep(dto.getCep())
+                .categoria(dto.getCategoria())
                 .criador(prestador)
                 .ativo(true) // Por padrão negocio é criado ativo
                 .build();
@@ -143,7 +145,7 @@ public class NegocioService {
     }
 
     @Transactional
-    public List<NegocioBuscaDTO> buscarNegociosProximos() {
+    public List<NegocioBuscaDTO> buscarNegociosProximos(String nome, CategoriaNegocio categoria) {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
 
@@ -155,12 +157,11 @@ public class NegocioService {
             throw new IllegalArgumentException("Cliente não possui CEP cadastrado.");
         }
 
-        // Busca latitude/longitude do cliente
         LatLngDTO clienteLatLng = geocodingService.buscarLatLongPorCep(cliente.getCep());
 
-        List<Negocio> negocios = negocioRepository.findAll()
-                .stream()
-                .filter(Negocio::isAtivo)
+        List<Negocio> negocios = negocioRepository.findByAtivoTrue().stream()
+                .filter(n -> (nome == null || n.getNome().toLowerCase().contains(nome.toLowerCase())))
+                .filter(n -> (categoria == null || n.getCategoria() == categoria))
                 .filter(n -> n.getCep() != null && !n.getCep().isBlank())
                 .toList();
 
@@ -174,7 +175,6 @@ public class NegocioService {
                         );
                         return NegocioBuscaDTO.fromEntity(n, distancia);
                     } catch (Exception e) {
-                        // ignora negócios com cep inválido
                         return null;
                     }
                 })

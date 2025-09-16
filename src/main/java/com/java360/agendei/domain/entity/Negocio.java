@@ -1,6 +1,7 @@
 package com.java360.agendei.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.java360.agendei.domain.model.CategoriaNegocio;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,10 @@ public class Negocio {
 
     @Column(nullable = false, length = 9)
     private String cep;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private CategoriaNegocio categoria;
 
     @Builder.Default
     @Column(nullable = false)
