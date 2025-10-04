@@ -28,7 +28,9 @@ public class AuthService {
         }
 
         String token = jwtService.generateToken(usuario.getId());
-        return new AuthResponseDTO(token, usuario.getPerfil().name().toLowerCase()); // converte para minúscula
+        return new AuthResponseDTO(  token,
+                usuario.getPerfil().name().toLowerCase(), // converte para minúscula
+                usuario.getNome());
     }
 
     public boolean isTokenValid(String token) {

@@ -4,6 +4,7 @@ import com.java360.agendei.domain.applicationservice.AuthService;
 import com.java360.agendei.infrastructure.dto.AuthRequestDTO;
 import com.java360.agendei.infrastructure.dto.AuthResponseDTO;
 import com.java360.agendei.infrastructure.dto.TokenRequestDTO;
+import com.java360.agendei.infrastructure.dto.TokenValidationResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +27,8 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<Boolean> validateToken(@RequestBody @Valid TokenRequestDTO dto) {
+    public ResponseEntity<TokenValidationResponseDTO> validateToken(@RequestBody @Valid TokenRequestDTO dto) {
         boolean valido = authService.isTokenValid(dto.getToken());
-        return ResponseEntity.ok(valido);
+        return ResponseEntity.ok(new TokenValidationResponseDTO(valido));
     }
 }
