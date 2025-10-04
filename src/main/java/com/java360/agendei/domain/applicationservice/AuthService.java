@@ -28,6 +28,10 @@ public class AuthService {
         }
 
         String token = jwtService.generateToken(usuario.getId());
-        return new AuthResponseDTO(token, usuario.getPerfil());
+        return new AuthResponseDTO(token, usuario.getPerfil().name().toLowerCase()); // converte para minúscula
+    }
+
+    public boolean isTokenValid(String token) {
+        return jwtService.isValid(token);
     }
 }

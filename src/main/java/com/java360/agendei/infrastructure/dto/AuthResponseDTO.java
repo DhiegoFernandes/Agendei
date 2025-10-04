@@ -8,5 +8,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class AuthResponseDTO {
     private String token;
-    private PerfilUsuario perfil;
+    private String perfil;
 }
