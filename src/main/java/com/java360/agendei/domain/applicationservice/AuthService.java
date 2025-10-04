@@ -3,6 +3,7 @@ package com.java360.agendei.domain.applicationservice;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.AuthRequestDTO;
+import com.java360.agendei.infrastructure.dto.AuthResponseDTO;
 import com.java360.agendei.infrastructure.exception.RequestException;
 import com.java360.agendei.infrastructure.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public String login(AuthRequestDTO dto) {
+    public AuthResponseDTO login(AuthRequestDTO dto) {
         Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RequestException("AuthError", "Email ou senha inválidos"));
 
@@ -26,6 +27,7 @@ public class AuthService {
             throw new RequestException("AuthError", "Email ou senha inválidos");
         }
 
-        return jwtService.generateToken(usuario.getId());
+        String token = jwtService.generateToken(usuario.getId());
+        return new AuthResponseDTO(token, usuario.getPerfil());
     }
 }

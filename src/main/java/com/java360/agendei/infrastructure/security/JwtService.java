@@ -13,7 +13,7 @@ import java.util.Date;
 public class JwtService {
 
     private final String SECRET_KEY = "chave-super-secreta-de-256-bits-jwt-agendei"; // >= 256 bits
-    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 4; // 4h
+    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 8; // 8h
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
