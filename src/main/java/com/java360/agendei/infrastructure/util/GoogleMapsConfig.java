@@ -10,7 +10,7 @@ public class GoogleMapsConfig {
     @Bean
     public GeoApiContext geoApiContext() {
         return new GeoApiContext.Builder()
-                .apiKey("AIzaSyByUCkvwfPoKnpQ7ufJJ6T-AapUJBTQvfA")
+                .apiKey("AIzaSyDQHCfEBOf_EO6Abo4Q-n987llQhru87Rw")
                 .build();
     }
 }

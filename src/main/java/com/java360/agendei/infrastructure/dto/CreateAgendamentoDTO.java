@@ -9,8 +9,7 @@ import java.time.LocalDateTime;
 public class CreateAgendamentoDTO {
     private Integer idAgendamento; // null = criar, != null = atualizar
 
-    @NotNull
-    private Integer servicoId;
+    private Integer servicoId; // pode ser opcional em updates
 
     @NotNull
     private LocalDateTime dataHora;
