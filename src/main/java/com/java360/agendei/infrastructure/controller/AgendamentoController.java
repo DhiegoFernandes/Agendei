@@ -20,15 +20,16 @@ public class AgendamentoController {
 
     @PostMapping
     public ResponseEntity<AgendamentoDTO> criar(@RequestBody @Valid CreateAgendamentoDTO dto) {
-        dto.setIdAgendamento(null); // garante criação
-        Agendamento agendamento = agendamentoService.salvarOuAtualizarAgendamento(dto);
+        Agendamento agendamento = agendamentoService.criarAgendamento(dto);
         return ResponseEntity.ok(AgendamentoDTO.fromEntity(agendamento));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AgendamentoDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid CreateAgendamentoDTO dto) {
-        dto.setIdAgendamento(id);
-        Agendamento agendamento = agendamentoService.salvarOuAtualizarAgendamento(dto);
+    public ResponseEntity<AgendamentoDTO> atualizar(
+            @PathVariable Integer id,
+            @RequestBody @Valid CreateAgendamentoDTO dto
+    ) {
+        Agendamento agendamento = agendamentoService.atualizarAgendamento(id, dto);
         return ResponseEntity.ok(AgendamentoDTO.fromEntity(agendamento));
     }
 
