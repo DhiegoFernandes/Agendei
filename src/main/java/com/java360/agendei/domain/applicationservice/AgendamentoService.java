@@ -152,7 +152,7 @@ public class AgendamentoService {
             throw new IllegalArgumentException("Horário indisponível. Já existe outro agendamento nesse horário.");
         }
 
-        // ✅ Atualiza o agendamento
+        // Atualiza o agendamento
         agendamento.setServico(servico);
         agendamento.setPrestador(prestador);
         agendamento.setDataHora(inicio);
@@ -161,14 +161,10 @@ public class AgendamentoService {
         return agendamentoRepository.save(agendamento);
     }
 
-    //  Detectar sobreposição de horarios
+    // Detecta a sobreposição de horarios
     private boolean overlaps(LocalDateTime inicio1, LocalDateTime fim1, LocalDateTime inicio2, LocalDateTime fim2) {
         return !(fim1.isBefore(inicio2) || inicio1.isAfter(fim2) || fim1.equals(inicio2) || inicio1.equals(fim2));
     }
-
-
-
-
 
     @Transactional
     public void concluirAgendamento(Integer agendamentoId) {

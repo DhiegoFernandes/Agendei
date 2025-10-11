@@ -29,6 +29,14 @@ public class NegocioController {
                 .body(NegocioDTO.fromEntity(negocio));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<NegocioDTO> atualizarNegocio(
+            @PathVariable Integer id,
+            @RequestBody UpdateNegocioDTO dto) {
+        Negocio atualizado = negocioService.atualizarNegocio(id, dto);
+        return ResponseEntity.ok(NegocioDTO.fromEntity(atualizado));
+    }
+
 
     //TODO testar requisição, será necessaria para acessar o id_negocio para sair dele no front-end
     @GetMapping("/negocio")

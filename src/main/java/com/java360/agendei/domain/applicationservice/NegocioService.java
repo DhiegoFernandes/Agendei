@@ -7,10 +7,7 @@ import com.java360.agendei.domain.repository.NegocioRepository;
 import com.java360.agendei.domain.repository.PrestadorRepository;
 import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
-import com.java360.agendei.infrastructure.dto.ConviteNegocioDTO;
-import com.java360.agendei.infrastructure.dto.CreateNegocioDTO;
-import com.java360.agendei.infrastructure.dto.LatLngDTO;
-import com.java360.agendei.infrastructure.dto.NegocioBuscaDTO;
+import com.java360.agendei.infrastructure.dto.*;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import com.java360.agendei.infrastructure.util.DistanciaUtils;
@@ -62,6 +59,44 @@ public class NegocioService {
 
         return criado;
     }
+
+    @Transactional
+    public Negocio atualizarNegocio(Integer id, UpdateNegocioDTO dto) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        Negocio negocio = negocioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
+
+        boolean isDono = negocio.getCriador().getId().equals(usuario.getId());
+        boolean isAdmin = PermissaoUtils.isAdmin(usuario);
+
+        if (!isDono && !isAdmin) {
+            throw new SecurityException("Você não tem permissão para atualizar este negócio.");
+        }
+
+        if (!negocio.isAtivo() && !isAdmin) {
+            throw new IllegalArgumentException("Não é possível atualizar um negócio inativo.");
+        }
+
+        if (dto.getNome() != null && !dto.getNome().equalsIgnoreCase(negocio.getNome())) {
+            if (negocioRepository.existsByNome(dto.getNome())) {
+                throw new IllegalArgumentException("Nome do negócio já está em uso.");
+            }
+            negocio.setNome(dto.getNome());
+        }
+
+        if (dto.getEndereco() != null) negocio.setEndereco(dto.getEndereco());
+        if (dto.getCep() != null) negocio.setCep(dto.getCep());
+        if (dto.getCategoria() != null) negocio.setCategoria(dto.getCategoria());
+
+        // Só admin pode ativar/desativar
+        if (isAdmin && dto.getAtivo() != null) negocio.setAtivo(dto.getAtivo());
+
+        return negocioRepository.save(negocio);
+    }
+
+
 
     @Transactional
     public void convidarPrestadorParaNegocio(ConviteNegocioDTO dto) {
