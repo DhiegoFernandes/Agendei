@@ -39,7 +39,7 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/usuarios/registrar",
                                 "/servicos/ativos",
-                                "/servicos/*/horarios-disponiveis",
+                                "/servicos/*/horarios-disponiveis-data",
                                 "/servicos/busca",
                                 "/servicos/negocio/**",
                                 "/negocios/*/fotos/**"

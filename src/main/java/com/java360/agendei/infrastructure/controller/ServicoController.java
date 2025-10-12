@@ -9,10 +9,12 @@ import com.java360.agendei.infrastructure.dto.SaveServicoDTO;
 import com.java360.agendei.infrastructure.dto.ServicoDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -31,11 +33,15 @@ public class ServicoController {
                 .body(ServicoDTO.fromEntity(servico));
     }
 
-    @GetMapping("/{id}/horarios-disponiveis")
-    public ResponseEntity<HorariosDisponiveisDTO> listarHorarios(@PathVariable("id") Integer servicoId) {
-        var dto = servicoService.listarHorariosPorServico(servicoId);
+    @GetMapping("/{id}/horarios-disponiveis-data")
+    public ResponseEntity<HorariosDisponiveisDTO> listarHorariosPorData(
+            @PathVariable("id") Integer servicoId,
+            @RequestParam("data") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+
+        var dto = servicoService.listarHorariosPorServicoEData(servicoId, data);
         return ResponseEntity.ok(dto);
     }
+
 
     @GetMapping("/ativos")
     public ResponseEntity<List<ServicoDTO>> listarAtivos() {

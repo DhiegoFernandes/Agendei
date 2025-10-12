@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,7 @@ public class ServicoService {
     }
 
     @Transactional
-    public HorariosDisponiveisDTO listarHorariosPorServico(Integer servicoId) {
+    public HorariosDisponiveisDTO listarHorariosPorServicoEData(Integer servicoId, LocalDate dataSelecionada) {
         Servico servico = servicoRepository.findById(servicoId)
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
@@ -84,58 +85,71 @@ public class ServicoService {
             throw new IllegalArgumentException("Serviço está desativado.");
         }
 
-        Integer prestadorId = servico.getPrestador().getId();
+        Prestador prestador = servico.getPrestador();
         int duracao = servico.getDuracaoMinutos();
+        DayOfWeek diaSemana = dataSelecionada.getDayOfWeek();
 
-        List<Disponibilidade> disponibilidades = disponibilidadeRepository.findByPrestadorId(prestadorId);
-        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestadorId);
+        // Obtém a disponibilidade do prestador para aquele dia da semana
+        Disponibilidade disponibilidade = disponibilidadeRepository
+                .findByPrestadorId(prestador.getId()).stream()
+                .filter(d -> d.getDiaSemana().name().equalsIgnoreCase(traduzirDiaDaSemana(diaSemana)))
+                .filter(Disponibilidade::isAtivo)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("O prestador não tem disponibilidade nesse dia."));
+
+        // Agendamentos já marcados para aquele dia
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorIdAndDataHoraBetween(
+                prestador.getId(),
+                dataSelecionada.atStartOfDay(),
+                dataSelecionada.plusDays(1).atStartOfDay()
+        );
+
+        List<String> horariosDisponiveis = new ArrayList<>();
+        LocalTime hora = disponibilidade.getHoraInicio();
+        LocalTime limite = disponibilidade.getHoraFim().minusMinutes(duracao);
+
+        while (!hora.isAfter(limite)) {
+            LocalTime inicio = hora;
+            LocalTime fim = hora.plusMinutes(duracao);
+
+            boolean conflita = agendamentos.stream().anyMatch(ag ->
+                    overlaps(inicio, fim,
+                            ag.getDataHora().toLocalTime(),
+                            ag.getDataHora().toLocalTime().plusMinutes(ag.getServico().getDuracaoMinutos()))
+            );
+
+            if (!conflita) {
+                horariosDisponiveis.add(inicio.toString());
+            }
+
+            hora = hora.plusMinutes(duracao);
+        }
 
         List<HorariosPorDiaDTO> dias = new ArrayList<>();
-
-        for (Disponibilidade d : disponibilidades) {
-            List<String> horarios = new ArrayList<>();
-            LocalTime hora = d.getHoraInicio();
-            LocalTime limite = d.getHoraFim().minusMinutes(duracao);
-
-            while (!hora.isAfter(limite)) {
-                LocalTime inicio = hora;
-                LocalTime fim = hora.plusMinutes(duracao);
-
-                boolean conflita = agendamentos.stream().anyMatch(ag ->
-                        ag.getDataHora().getDayOfWeek().equals(toDayOfWeek(d.getDiaSemana())) &&
-                                overlaps(inicio, fim, ag.getDataHora().toLocalTime(), ag.getDataHora().toLocalTime().plusMinutes(ag.getServico().getDuracaoMinutos()))
-                );
-
-                if (!conflita) {
-                    horarios.add(inicio.toString());
-                }
-
-                hora = hora.plusMinutes(duracao);
-            }
-
-            if (!horarios.isEmpty()) {
-                dias.add(new HorariosPorDiaDTO(d.getDiaSemana(), horarios));
-            }
+        if (!horariosDisponiveis.isEmpty()) {
+            dias.add(new HorariosPorDiaDTO(DiaSemanaDisponivel.valueOf(traduzirDiaDaSemana(diaSemana)), horariosDisponiveis));
         }
 
         return new HorariosDisponiveisDTO(servicoId, dias);
     }
 
+
     private boolean overlaps(LocalTime inicio1, LocalTime fim1, LocalTime inicio2, LocalTime fim2) {
         return !(fim1.isBefore(inicio2) || inicio1.isAfter(fim2) || fim1.equals(inicio2) || inicio1.equals(fim2));
     }
 
-    private DayOfWeek toDayOfWeek(DiaSemanaDisponivel dia) {
+    private String traduzirDiaDaSemana(DayOfWeek dia) {
         return switch (dia) {
-            case DOMINGO -> DayOfWeek.SUNDAY;
-            case SEGUNDA -> DayOfWeek.MONDAY;
-            case TERCA -> DayOfWeek.TUESDAY;
-            case QUARTA -> DayOfWeek.WEDNESDAY;
-            case QUINTA -> DayOfWeek.THURSDAY;
-            case SEXTA -> DayOfWeek.FRIDAY;
-            case SABADO -> DayOfWeek.SATURDAY;
+            case SUNDAY -> "DOMINGO";
+            case MONDAY -> "SEGUNDA";
+            case TUESDAY -> "TERCA";
+            case WEDNESDAY -> "QUARTA";
+            case THURSDAY -> "QUINTA";
+            case FRIDAY -> "SEXTA";
+            case SATURDAY -> "SABADO";
         };
     }
+
 
 
     @Transactional
