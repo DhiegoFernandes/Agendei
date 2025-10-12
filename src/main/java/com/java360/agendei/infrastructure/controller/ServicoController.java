@@ -65,11 +65,7 @@ public class ServicoController {
         return ResponseEntity.ok(ServicoDTO.fromEntity(servico));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirServico(@PathVariable Integer id) {
-        servicoService.excluirServico(id); // prestadorId vem do token
-        return ResponseEntity.noContent().build();
-    }
+
 
     @GetMapping("/busca")
     public ResponseEntity<List<ServicoDTO>> buscar(

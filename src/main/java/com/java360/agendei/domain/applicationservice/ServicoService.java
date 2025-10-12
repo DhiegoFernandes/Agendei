@@ -182,22 +182,6 @@ public class ServicoService {
         return servico;
     }
 
-    @Transactional
-    public void excluirServico(Integer servicoId) {
-        Usuario usuario = UsuarioAutenticado.get();
-        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
-
-        Servico servico = servicoRepository.findById(servicoId)
-                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
-
-        if (!servico.getPrestador().getId().equals(usuario.getId()) &&
-                !PermissaoUtils.isAdmin(usuario)) {
-            throw new SecurityException("Você não tem permissão para excluir este serviço.");
-        }
-
-        servico.setAtivo(false);
-    }
-
 
     public List<ServicoDTO> buscarServicos(String titulo, String nomePrestador, DiaSemanaDisponivel diaSemana) {
         List<Servico> resultados = servicoRepository.buscarServicos(titulo, nomePrestador, diaSemana);
