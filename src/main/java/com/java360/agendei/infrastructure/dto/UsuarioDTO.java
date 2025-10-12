@@ -12,6 +12,7 @@ public class UsuarioDTO {
     private final String email;
     private final String telefone;
     private final PerfilUsuario perfil;
+    private final boolean ativo;
 
     // Apenas para cliente
     private final String cep;
@@ -33,6 +34,7 @@ public class UsuarioDTO {
                 usuario.getEmail(),
                 usuario.getTelefone(),
                 usuario.getPerfil(),
+                usuario.isAtivo(),
                 cep,
                 endereco
         );

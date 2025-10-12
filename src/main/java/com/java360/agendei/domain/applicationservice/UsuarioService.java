@@ -6,6 +6,9 @@ import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.RegistroUsuarioDTO;
+import com.java360.agendei.infrastructure.dto.UsuarioDTO;
+import com.java360.agendei.infrastructure.dto.UsuarioDetalhadoDTO;
+import com.java360.agendei.infrastructure.security.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +20,7 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Transactional
     public Usuario registrarUsuario(RegistroUsuarioDTO dto) {
@@ -51,5 +55,22 @@ public class UsuarioService {
 
         return usuarioRepository.save(usuario);
     }
+
+    public UsuarioDetalhadoDTO buscarDadosUsuarioPorToken(String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        Integer userId = jwtService.extractUserId(token);
+        if (userId == null) {
+            throw new IllegalArgumentException("Token inválido.");
+        }
+
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        return UsuarioDetalhadoDTO.fromEntity(usuario);
+    }
+
 
 }
