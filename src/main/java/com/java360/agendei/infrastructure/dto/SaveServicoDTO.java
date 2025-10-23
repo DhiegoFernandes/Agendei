@@ -15,8 +15,8 @@ public class SaveServicoDTO {
     @Size(max = 255)
     private String descricao;
 
-    @NotNull
-    private CategoriaServico categoria;
+    //@NotNull
+    //private CategoriaServico categoria;
 
     @Positive
     private double valor;
