@@ -76,6 +76,8 @@ public class AvaliacaoNegocioService {
 
         atualizarMediaNegocio(salva.getNegocio());
 
+
+        // Retorna avaliação criada
         return AvaliacaoNegocioDTO.builder()
                 .id(salva.getId())
                 .negocioId(salva.getNegocio().getId())
@@ -84,9 +86,11 @@ public class AvaliacaoNegocioService {
                 .nomeCliente(salva.getCliente().getNome())
                 .nota(salva.getNota())
                 .comentario(salva.getComentario())
+                .dataAvaliacao(salva.getDataAvaliacao())
                 .build();
     }
 
+    // Retorna avaliações do negócio
     public List<AvaliacaoNegocioDTO> listarAvaliacoesNegocio(Integer negocioId) {
         return avaliacaoRepository.findByNegocioId(negocioId)
                 .stream()
@@ -98,6 +102,7 @@ public class AvaliacaoNegocioService {
                         .nomeCliente(av.getCliente().getNome())
                         .nota(av.getNota())
                         .comentario(av.getComentario())
+                        .dataAvaliacao(av.getDataAvaliacao())
                         .build()
                 ).toList();
     }

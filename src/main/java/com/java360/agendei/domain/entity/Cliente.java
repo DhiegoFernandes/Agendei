@@ -21,4 +21,7 @@ public class Cliente extends Usuario {
 
     @Column(nullable = false, length = 200)
     private String endereco;
+
+    @Column(nullable = false, length = 10)
+    private String numero;
 }

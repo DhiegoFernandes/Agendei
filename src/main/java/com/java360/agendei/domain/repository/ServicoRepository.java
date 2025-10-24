@@ -15,8 +15,6 @@ public interface ServicoRepository extends JpaRepository<Servico, Integer> {
 
     List<Servico> findAllByAtivoTrue();
 
-    boolean existsByTituloAndPrestadorId(String titulo, Integer prestadorId);
-
     boolean existsByTituloAndPrestadorIdAndIdNot(String titulo, Integer prestadorId, Integer id);
 
     List<Servico> findByNegocio_NomeIgnoreCaseAndAtivoTrue(String nome);
@@ -27,7 +25,7 @@ public interface ServicoRepository extends JpaRepository<Servico, Integer> {
 
     List<Servico> findByNegocio_IdAndAtivoTrue(Integer negocioId);
 
-    List<Servico> findByPrestadorIdAndNegocioIdAndAtivoTrue(Integer prestadorId, Integer negocioId);
+    List<Servico> findByNegocio_Id(Integer negocioId);
 
     @Query("""
         SELECT s FROM Servico s

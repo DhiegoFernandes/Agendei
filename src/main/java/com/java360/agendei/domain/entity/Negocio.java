@@ -23,6 +23,9 @@ public class Negocio {
     @Column(nullable = false, length = 200)
     private String endereco;
 
+    @Column(nullable = false, length = 10)
+    private String numero;
+
     @Column(nullable = false, length = 9)
     private String cep;
 

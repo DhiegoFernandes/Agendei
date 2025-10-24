@@ -3,6 +3,8 @@ package com.java360.agendei.infrastructure.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class AvaliacaoNegocioDTO {
@@ -13,4 +15,5 @@ public class AvaliacaoNegocioDTO {
     private String nomeCliente;
     private int nota;
     private String comentario;
+    private LocalDateTime dataAvaliacao;
 }

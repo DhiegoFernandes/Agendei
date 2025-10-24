@@ -45,10 +45,11 @@ public class NegocioService {
         Negocio negocio = Negocio.builder()
                 .nome(dto.getNome())
                 .endereco(dto.getEndereco())
+                .numero(dto.getNumero())
                 .cep(dto.getCep())
                 .categoria(dto.getCategoria())
                 .criador(prestador)
-                .ativo(true) // Por padrão negocio é criado ativo
+                .ativo(true) // por padrão negocio é criado ativo
                 .build();
 
         Negocio criado = negocioRepository.save(negocio);
@@ -87,6 +88,7 @@ public class NegocioService {
         }
 
         if (dto.getEndereco() != null) negocio.setEndereco(dto.getEndereco());
+        if (dto.getNumero() != null) negocio.setNumero(dto.getNumero());
         if (dto.getCep() != null) negocio.setCep(dto.getCep());
         if (dto.getCategoria() != null) negocio.setCategoria(dto.getCategoria());
 

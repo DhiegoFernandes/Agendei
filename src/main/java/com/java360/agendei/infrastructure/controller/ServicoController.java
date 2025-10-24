@@ -25,6 +25,7 @@ public class ServicoController {
 
     private final ServicoService servicoService;
 
+    //Cadastra serviço
     @PostMapping
     public ResponseEntity<ServicoDTO> cadastrar(@RequestBody @Valid SaveServicoDTO dto) {
         Servico servico = servicoService.cadastrarServico(dto);
@@ -33,6 +34,7 @@ public class ServicoController {
                 .body(ServicoDTO.fromEntity(servico));
     }
 
+    //Verifica horarios disponiveis em uma data especifica (?data=2025-12-30)
     @GetMapping("/{id}/horarios-disponiveis-data")
     public ResponseEntity<HorariosDisponiveisDTO> listarHorariosPorData(
             @PathVariable("id") Integer servicoId,
@@ -42,7 +44,25 @@ public class ServicoController {
         return ResponseEntity.ok(dto);
     }
 
+    // Atualiza serviço
+    @PutMapping("/{id}")
+    public ResponseEntity<ServicoDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid SaveServicoDTO dto) {
+        Servico servico = servicoService.atualizarServico(id, dto);
+        return ResponseEntity.ok(ServicoDTO.fromEntity(servico));
+    }
 
+    // Busca serviço
+    @GetMapping("/busca")
+    public ResponseEntity<List<ServicoDTO>> buscar(
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) String nomePrestador,
+            @RequestParam(required = false) DiaSemanaDisponivel diaSemana
+    ) {
+        var resultado = servicoService.buscarServicos(titulo, nomePrestador, diaSemana);
+        return ResponseEntity.ok(resultado);
+    }
+
+    // Lista TODOS serviços ativos
     @GetMapping("/ativos")
     public ResponseEntity<List<ServicoDTO>> listarAtivos() {
         List<ServicoDTO> lista = servicoService
@@ -53,28 +73,18 @@ public class ServicoController {
         return ResponseEntity.ok(lista);
     }
 
+    // Lista todos serviços ATIVOS por negocio
     @GetMapping("/negocio/{id}")
     public ResponseEntity<List<ServicoDTO>> listarPorNegocio(@PathVariable Integer id) {
         List<ServicoDTO> lista = servicoService.listarServicosPorNegocio(id);
         return ResponseEntity.ok(lista);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ServicoDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid SaveServicoDTO dto) {
-        Servico servico = servicoService.atualizarServico(id, dto);
-        return ResponseEntity.ok(ServicoDTO.fromEntity(servico));
-    }
-
-
-
-    @GetMapping("/busca")
-    public ResponseEntity<List<ServicoDTO>> buscar(
-            @RequestParam(required = false) String titulo,
-            @RequestParam(required = false) String nomePrestador,
-            @RequestParam(required = false) DiaSemanaDisponivel diaSemana
-    ) {
-        var resultado = servicoService.buscarServicos(titulo, nomePrestador, diaSemana);
-        return ResponseEntity.ok(resultado);
+    // Lista todos os serviços por negócio (ativos/inativos)
+    @GetMapping("/negocio/{id}/todos")
+    public ResponseEntity<List<ServicoDTO>> listarTodosPorNegocio(@PathVariable Integer id) {
+        List<ServicoDTO> lista = servicoService.listarTodosServicosPorNegocio(id);
+        return ResponseEntity.ok(lista);
     }
 
 

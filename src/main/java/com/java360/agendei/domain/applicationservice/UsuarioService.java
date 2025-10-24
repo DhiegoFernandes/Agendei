@@ -41,11 +41,12 @@ public class UsuarioService {
         switch (dto.getPerfil()) {
             case CLIENTE -> {
                 Cliente cliente = new Cliente();
-                if (dto.getCep() == null || dto.getEndereco() == null) {
-                    throw new IllegalArgumentException("CEP e Endereço são obrigatórios para clientes.");
+                if (dto.getCep() == null || dto.getEndereco() == null || dto.getNumero() == null) {
+                    throw new IllegalArgumentException("CEP, Endereço e Número são obrigatórios para clientes.");
                 }
                 cliente.setCep(dto.getCep());
                 cliente.setEndereco(dto.getEndereco());
+                cliente.setNumero(dto.getNumero());
                 usuario = cliente;
             }
             case PRESTADOR -> usuario = new Prestador();

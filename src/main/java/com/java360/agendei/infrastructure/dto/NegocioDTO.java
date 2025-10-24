@@ -11,6 +11,7 @@ public class NegocioDTO {
     private final String endereco;
     private final String cep;
     private final CategoriaNegocio Categoria;
+    private final String numero;
 
     public static NegocioDTO fromEntity(Negocio negocio) {
         return new NegocioDTO(
@@ -18,7 +19,8 @@ public class NegocioDTO {
                 negocio.getNome(),
                 negocio.getEndereco(),
                 negocio.getCep(),
-                negocio.getCategoria()
+                negocio.getCategoria(),
+                negocio.getNumero()
         );
     }
 }

@@ -12,6 +12,7 @@ public class NegocioResumoDTO {
     private String nome;
     private String endereco;
     private String cep;
+    private String numero;
     private CategoriaNegocio categoria;
     private boolean ativo;
 
@@ -21,6 +22,7 @@ public class NegocioResumoDTO {
                 .nome(negocio.getNome())
                 .endereco(negocio.getEndereco())
                 .cep(negocio.getCep())
+                .numero(negocio.getNumero())
                 .categoria(negocio.getCategoria())
                 .ativo(negocio.isAtivo())
                 .build();

@@ -65,17 +65,6 @@ public class ServicoService {
         return servicoRepository.save(servico);
     }
 
-    public List<Servico> listarServicosAtivos() {
-        return servicoRepository.findAllByAtivoTrue();
-    }
-
-    public List<ServicoDTO> listarServicosPorNegocio(Integer negocioId) {
-        List<Servico> servicos = servicoRepository.findByNegocio_IdAndAtivoTrue(negocioId);
-        return servicos.stream()
-                .map(ServicoDTO::fromEntity)
-                .toList();
-    }
-
     @Transactional
     public HorariosDisponiveisDTO listarHorariosPorServicoEData(Integer servicoId, LocalDate dataSelecionada) {
         Servico servico = servicoRepository.findById(servicoId)
@@ -187,4 +176,46 @@ public class ServicoService {
         List<Servico> resultados = servicoRepository.buscarServicos(titulo, nomePrestador, diaSemana);
         return resultados.stream().map(ServicoDTO::fromEntity).toList();
     }
+
+    // Lista TODOS serviços ativos
+    public List<Servico> listarServicosAtivos() {
+        return servicoRepository.findAllByAtivoTrue();
+    }
+
+    // Lista todos serviços ATIVOS por negocio
+    public List<ServicoDTO> listarServicosPorNegocio(Integer negocioId) {
+        List<Servico> servicos = servicoRepository.findByNegocio_IdAndAtivoTrue(negocioId);
+        return servicos.stream()
+                .map(ServicoDTO::fromEntity)
+                .toList();
+    }
+
+    // Lista todos os serviços por negócio (ativos/inativos)
+    @Transactional
+    public List<ServicoDTO> listarTodosServicosPorNegocio(Integer negocioId) {
+        Usuario usuario = UsuarioAutenticado.get();
+
+        // Permite apenas Prestadores ou Administradores
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        // Garante que o negócio existe
+        Negocio negocio = negocioRepository.findById(negocioId)
+                .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
+
+        // Se for prestador, precisa estar vinculado a esse negócio
+        if (usuario instanceof Prestador prestador && !PermissaoUtils.isAdmin(usuario)) {
+            if (prestador.getNegocio() == null || !prestador.getNegocio().getId().equals(negocioId)) {
+                throw new SecurityException("Você não tem permissão para visualizar os serviços deste negócio.");
+            }
+        }
+
+        // Busca todos os serviços (ativos e inativos)
+        List<Servico> servicos = servicoRepository.findByNegocio_Id(negocioId);
+
+        return servicos.stream()
+                .map(ServicoDTO::fromEntity)
+                .toList();
+    }
+
+
 }
