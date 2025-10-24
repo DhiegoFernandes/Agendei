@@ -28,7 +28,7 @@ public class NegocioService {
     private final GeocodingService geocodingService;
 
     @Transactional
-    public Negocio criarNegocio(CreateNegocioDTO dto) { // do dto vem os dados para criação
+    public NegocioDTO criarNegocio(CreateNegocioDTO dto) {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
@@ -54,15 +54,14 @@ public class NegocioService {
 
         Negocio criado = negocioRepository.save(negocio);
 
-        // Associa o criador ao negócio e persiste a atualização do prestador
         prestador.setNegocio(criado);
         usuarioRepository.save(prestador); // ou prestadorRepository.save(prestador)
 
-        return criado;
+        return NegocioDTO.fromEntity(criado);
     }
 
     @Transactional
-    public Negocio atualizarNegocio(Integer id, UpdateNegocioDTO dto) {
+    public NegocioDTO atualizarNegocio(Integer id, UpdateNegocioDTO dto) {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
@@ -73,7 +72,6 @@ public class NegocioService {
         boolean isPrestador = usuario.getPerfil() == PerfilUsuario.PRESTADOR;
         boolean isDono = isPrestador && negocio.getCriador().getId().equals(usuario.getId());
 
-        // Somente o dono ou o admin podem alterar
         if (!isDono && !isAdmin) {
             throw new SecurityException("Você não tem permissão para atualizar este negócio.");
         }
@@ -82,7 +80,7 @@ public class NegocioService {
             throw new IllegalArgumentException("Não é possível atualizar um negócio inativo.");
         }
 
-        // ADMIN pode alterar tudo
+        // Atualização conforme perfil
         if (isAdmin) {
             if (dto.getNome() != null && !dto.getNome().equalsIgnoreCase(negocio.getNome())) {
                 if (negocioRepository.existsByNome(dto.getNome())) {
@@ -97,7 +95,6 @@ public class NegocioService {
             if (dto.getAtivo() != null) negocio.setAtivo(dto.getAtivo());
         }
 
-        // PRESTADOR dono pode alterar apenas nome e categoria
         if (isDono && !isAdmin) {
             if (dto.getNome() != null && !dto.getNome().equalsIgnoreCase(negocio.getNome())) {
                 if (negocioRepository.existsByNome(dto.getNome())) {
@@ -112,8 +109,10 @@ public class NegocioService {
             }
         }
 
-        return negocioRepository.save(negocio);
+        Negocio atualizado = negocioRepository.save(negocio);
+        return NegocioDTO.fromEntity(atualizado);
     }
+
 
 
 

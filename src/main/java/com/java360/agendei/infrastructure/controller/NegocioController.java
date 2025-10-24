@@ -23,18 +23,14 @@ public class NegocioController {
 
     @PostMapping
     public ResponseEntity<NegocioDTO> criar(@RequestBody @Valid CreateNegocioDTO dto) {
-        Negocio negocio = negocioService.criarNegocio(dto);
-        return ResponseEntity
-                .created(URI.create("/negocios/" + negocio.getId()))
-                .body(NegocioDTO.fromEntity(negocio));
+        NegocioDTO negocio = negocioService.criarNegocio(dto);
+        return ResponseEntity.ok(negocio);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NegocioDTO> atualizarNegocio(
-            @PathVariable Integer id,
-            @RequestBody UpdateNegocioDTO dto) {
-        Negocio atualizado = negocioService.atualizarNegocio(id, dto);
-        return ResponseEntity.ok(NegocioDTO.fromEntity(atualizado));
+    public ResponseEntity<NegocioDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid UpdateNegocioDTO dto) {
+        NegocioDTO negocio = negocioService.atualizarNegocio(id, dto);
+        return ResponseEntity.ok(negocio);
     }
 
 

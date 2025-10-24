@@ -2,25 +2,31 @@ package com.java360.agendei.infrastructure.dto;
 
 import com.java360.agendei.domain.entity.Negocio;
 import com.java360.agendei.domain.model.CategoriaNegocio;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
+@AllArgsConstructor
 public class NegocioDTO {
-    private final Integer id;
-    private final String nome;
-    private final String endereco;
-    private final String cep;
-    private final CategoriaNegocio Categoria;
-    private final String numero;
+    private Integer id;
+    private String nome;
+    private String endereco;
+    private String numero;
+    private String cep;
+    private CategoriaNegocio categoria;
+    private boolean ativo;
 
     public static NegocioDTO fromEntity(Negocio negocio) {
-        return new NegocioDTO(
-                negocio.getId(),
-                negocio.getNome(),
-                negocio.getEndereco(),
-                negocio.getCep(),
-                negocio.getCategoria(),
-                negocio.getNumero()
-        );
+        return NegocioDTO.builder()
+                .id(negocio.getId())
+                .nome(negocio.getNome())
+                .endereco(negocio.getEndereco())
+                .numero(negocio.getNumero())
+                .cep(negocio.getCep())
+                .categoria(negocio.getCategoria())
+                .ativo(negocio.isAtivo())
+                .build();
     }
 }
