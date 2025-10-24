@@ -69,9 +69,11 @@ public class NegocioService {
         Negocio negocio = negocioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
 
-        boolean isDono = negocio.getCriador().getId().equals(usuario.getId());
         boolean isAdmin = PermissaoUtils.isAdmin(usuario);
+        boolean isPrestador = usuario.getPerfil() == PerfilUsuario.PRESTADOR;
+        boolean isDono = isPrestador && negocio.getCriador().getId().equals(usuario.getId());
 
+        // Somente o dono ou o admin podem alterar
         if (!isDono && !isAdmin) {
             throw new SecurityException("Você não tem permissão para atualizar este negócio.");
         }
@@ -80,23 +82,39 @@ public class NegocioService {
             throw new IllegalArgumentException("Não é possível atualizar um negócio inativo.");
         }
 
-        if (dto.getNome() != null && !dto.getNome().equalsIgnoreCase(negocio.getNome())) {
-            if (negocioRepository.existsByNome(dto.getNome())) {
-                throw new IllegalArgumentException("Nome do negócio já está em uso.");
+        // ADMIN pode alterar tudo
+        if (isAdmin) {
+            if (dto.getNome() != null && !dto.getNome().equalsIgnoreCase(negocio.getNome())) {
+                if (negocioRepository.existsByNome(dto.getNome())) {
+                    throw new IllegalArgumentException("Nome do negócio já está em uso.");
+                }
+                negocio.setNome(dto.getNome());
             }
-            negocio.setNome(dto.getNome());
+            if (dto.getEndereco() != null) negocio.setEndereco(dto.getEndereco());
+            if (dto.getNumero() != null) negocio.setNumero(dto.getNumero());
+            if (dto.getCep() != null) negocio.setCep(dto.getCep());
+            if (dto.getCategoria() != null) negocio.setCategoria(dto.getCategoria());
+            if (dto.getAtivo() != null) negocio.setAtivo(dto.getAtivo());
         }
 
-        if (dto.getEndereco() != null) negocio.setEndereco(dto.getEndereco());
-        if (dto.getNumero() != null) negocio.setNumero(dto.getNumero());
-        if (dto.getCep() != null) negocio.setCep(dto.getCep());
-        if (dto.getCategoria() != null) negocio.setCategoria(dto.getCategoria());
+        // PRESTADOR dono pode alterar apenas nome e categoria
+        if (isDono && !isAdmin) {
+            if (dto.getNome() != null && !dto.getNome().equalsIgnoreCase(negocio.getNome())) {
+                if (negocioRepository.existsByNome(dto.getNome())) {
+                    throw new IllegalArgumentException("Nome do negócio já está em uso.");
+                }
+                negocio.setNome(dto.getNome());
+            }
+            if (dto.getCategoria() != null) negocio.setCategoria(dto.getCategoria());
 
-        // Só admin pode ativar/desativar
-        if (isAdmin && dto.getAtivo() != null) negocio.setAtivo(dto.getAtivo());
+            if (dto.getEndereco() != null || dto.getNumero() != null || dto.getCep() != null || dto.getAtivo() != null) {
+                throw new SecurityException("Prestadores só podem alterar o nome e a categoria do negócio.");
+            }
+        }
 
         return negocioRepository.save(negocio);
     }
+
 
 
 
