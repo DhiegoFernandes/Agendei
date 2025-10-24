@@ -11,8 +11,15 @@ import com.java360.agendei.infrastructure.dto.UsuarioDetalhadoDTO;
 import com.java360.agendei.infrastructure.security.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +77,85 @@ public class UsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
         return UsuarioDetalhadoDTO.fromEntity(usuario);
+    }
+
+    @Transactional
+    public Page<UsuarioDetalhadoDTO> listarTodosUsuariosPaginado(String token, int page, int size, String sortBy, String direction) {
+        // Remove o prefixo "Bearer " do token
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        // Extrai o ID do usuário logado
+        Integer userId = jwtService.extractUserId(token);
+        if (userId == null) {
+            throw new IllegalArgumentException("Token inválido.");
+        }
+
+        // Busca o usuário logado
+        Usuario usuarioLogado = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        // Verifica se é ADMIN
+        if (usuarioLogado.getPerfil() != com.java360.agendei.domain.model.PerfilUsuario.ADMIN) {
+            throw new SecurityException("Acesso negado. Apenas administradores podem listar todos os usuários.");
+        }
+
+        // Configura ordenação
+        Sort sort = direction.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Busca usuários com paginação
+        Page<Usuario> usuariosPage = usuarioRepository.findAll(pageable);
+
+        // Converte para DTO
+        return usuariosPage.map(UsuarioDetalhadoDTO::fromEntity);
+    }
+
+
+    @Transactional
+    public Page<UsuarioDetalhadoDTO> listarUsuariosComFiltros(
+            String token,
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            com.java360.agendei.domain.model.PerfilUsuario perfil,
+            String nome,
+            String email,
+            String telefone
+    ) {
+        // Remove prefixo "Bearer "
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        // Extrai ID do usuário
+        Integer userId = jwtService.extractUserId(token);
+        if (userId == null) {
+            throw new IllegalArgumentException("Token inválido.");
+        }
+
+        Usuario usuarioLogado = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        if (usuarioLogado.getPerfil() != com.java360.agendei.domain.model.PerfilUsuario.ADMIN) {
+            throw new SecurityException("Acesso negado. Apenas administradores podem listar usuários.");
+        }
+
+        Sort sort = direction.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Busca com filtros opcionais
+        Page<Usuario> usuariosPage = usuarioRepository.buscarComFiltros(perfil, nome, email, telefone, pageable);
+
+        return usuariosPage.map(UsuarioDetalhadoDTO::fromEntity);
     }
 
 

@@ -7,8 +7,11 @@ import com.java360.agendei.infrastructure.dto.UsuarioDTO;
 import com.java360.agendei.infrastructure.dto.UsuarioDetalhadoDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -27,4 +30,23 @@ public class UsuarioController {
         UsuarioDetalhadoDTO usuario = usuarioService.buscarDadosUsuarioPorToken(token);
         return ResponseEntity.ok(usuario);
     }
+
+    @GetMapping("/todos")
+    public ResponseEntity<Page<UsuarioDetalhadoDTO>> listarUsuariosComFiltros(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(required = false) com.java360.agendei.domain.model.PerfilUsuario perfil,
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String telefone
+    ) {
+        Page<UsuarioDetalhadoDTO> usuarios = usuarioService.listarUsuariosComFiltros(
+                token, page, size, sortBy, direction, perfil, nome, email, telefone
+        );
+        return ResponseEntity.ok(usuarios);
+    }
+
 }
