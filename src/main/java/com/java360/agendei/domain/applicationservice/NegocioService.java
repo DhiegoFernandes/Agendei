@@ -114,9 +114,6 @@ public class NegocioService {
     }
 
 
-
-
-
     @Transactional
     public void convidarPrestadorParaNegocio(ConviteNegocioDTO dto) {
         Usuario usuario = UsuarioAutenticado.get();
@@ -236,6 +233,14 @@ public class NegocioService {
                 .sorted((a, b) -> Double.compare(a.getDistanciaKm(), b.getDistanciaKm()))
                 .toList();
     }
+
+    @Transactional
+    public NegocioDTO buscarNegocioPorId(Integer id) {
+        Negocio negocio = negocioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
+        return NegocioDTO.fromEntity(negocio);
+    }
+
 
 
 

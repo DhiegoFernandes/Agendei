@@ -17,6 +17,7 @@ public class NegocioDTO {
     private String cep;
     private CategoriaNegocio categoria;
     private boolean ativo;
+    private Double notaMedia;
 
     public static NegocioDTO fromEntity(Negocio negocio) {
         return NegocioDTO.builder()
@@ -27,6 +28,7 @@ public class NegocioDTO {
                 .cep(negocio.getCep())
                 .categoria(negocio.getCategoria())
                 .ativo(negocio.isAtivo())
+                .notaMedia(negocio.getNotaMedia())
                 .build();
     }
 }

@@ -71,5 +71,11 @@ public class NegocioController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<NegocioDTO> buscarPorId(@PathVariable Integer id) {
+        NegocioDTO negocio = negocioService.buscarNegocioPorId(id);
+        return ResponseEntity.ok(negocio);
+    }
+
 
 }
