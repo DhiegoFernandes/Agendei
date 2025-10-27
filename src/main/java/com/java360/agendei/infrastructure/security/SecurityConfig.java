@@ -53,7 +53,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); // Custo 10 (padrão)
     }
 
     // Necessário se quiser usar AuthenticationManager diretamente
