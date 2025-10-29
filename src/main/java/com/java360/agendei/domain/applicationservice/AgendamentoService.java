@@ -91,20 +91,22 @@ public class AgendamentoService {
     @Transactional
     public Agendamento atualizarAgendamento(Integer id, CreateAgendamentoDTO dto) {
         Usuario usuario = UsuarioAutenticado.get();
-        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE, PerfilUsuario.ADMIN);
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
         Agendamento agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado."));
 
-        // mpede alterações em agendamentos cancelados
+        // Impede alterações em agendamentos cancelados
         if (agendamento.getStatus() == StatusAgendamento.CANCELADO) {
             throw new IllegalArgumentException("Não é possível alterar um agendamento cancelado.");
         }
 
-        // Valida permissão do cliente ou admin
-        if (!agendamento.getCliente().getId().equals(usuario.getId()) &&
-                !PermissaoUtils.isAdmin(usuario)) {
-            throw new SecurityException("Sem permissão para alterar este agendamento.");
+        boolean isCliente = agendamento.getCliente().getId().equals(usuario.getId());
+        boolean isPrestador = agendamento.getPrestador().getId().equals(usuario.getId());
+        boolean isAdmin = PermissaoUtils.isAdmin(usuario);
+
+        if (!isCliente && !isPrestador && !isAdmin) {
+            throw new SecurityException("Você não tem permissão para alterar este agendamento.");
         }
 
         if (!dto.getDataHora().isAfter(LocalDateTime.now())) {
