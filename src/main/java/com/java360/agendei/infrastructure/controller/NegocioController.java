@@ -49,12 +49,14 @@ public class NegocioController {
         return ResponseEntity.ok("Prestador associado ao negócio com sucesso.");
     }
 
+    // Sair prestador convidado
     @DeleteMapping("/sair")
     public ResponseEntity<String> sairDoNegocio() {
         negocioService.sairDoNegocio(); // ID obtido internamente via token
         return ResponseEntity.ok("Prestador removido do negócio com sucesso.");
     }
 
+    // Sair APENAS DONO
     @DeleteMapping("/{id}")
     public ResponseEntity<String> excluirNegocio(@PathVariable Integer id) {
         negocioService.excluirNegocio(id); // ID do solicitante extraído via token

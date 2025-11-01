@@ -3,10 +3,8 @@ package com.java360.agendei.domain.applicationservice;
 import com.java360.agendei.domain.entity.*;
 import com.java360.agendei.domain.model.CategoriaNegocio;
 import com.java360.agendei.domain.model.PerfilUsuario;
-import com.java360.agendei.domain.repository.NegocioRepository;
-import com.java360.agendei.domain.repository.PrestadorRepository;
-import com.java360.agendei.domain.repository.ServicoRepository;
-import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.domain.model.StatusAgendamento;
+import com.java360.agendei.domain.repository.*;
 import com.java360.agendei.infrastructure.dto.*;
 import com.java360.agendei.infrastructure.dto.negocio.*;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
@@ -27,6 +25,7 @@ public class NegocioService {
     private final ServicoRepository servicoRepository;
     private final PrestadorRepository prestadorRepository;
     private final GeocodingService geocodingService;
+    private final AgendamentoRepository agendamentoRepository;
 
     @Transactional
     public NegocioDTO criarNegocio(CreateNegocioDTO dto) {
@@ -147,6 +146,7 @@ public class NegocioService {
         usuarioRepository.save(prestadorConvidado); // garantir persistência
     }
 
+    // Sair prestador convidado
     @Transactional
     public void sairDoNegocio() {
         Usuario usuario = UsuarioAutenticado.get();
@@ -167,11 +167,18 @@ public class NegocioService {
         List<Servico> servicos = servicoRepository.findByPrestadorIdAndNegocioId(prestador.getId(), negocio.getId());
         servicos.forEach(s -> s.setAtivo(false));
 
+        // Cancela agendamentos pendentes
+        List<Agendamento> agendamentosAtivos = agendamentoRepository.findByPrestadorId(prestador.getId());
+        agendamentosAtivos.stream()
+                .filter(a -> a.getStatus() == StatusAgendamento.PENDENTE)
+                .forEach(a -> a.setStatus(StatusAgendamento.CANCELADO));
+
         // Desvincula o prestador do negócio
         prestador.setNegocio(null);
         usuarioRepository.save(prestador); // ou prestadorRepository.save(prestador);
     }
 
+    // Sair APENAS DONO
     @Transactional
     public void excluirNegocio(Integer negocioId) {
         Usuario usuario = UsuarioAutenticado.get();
@@ -191,9 +198,17 @@ public class NegocioService {
         List<Servico> servicos = servicoRepository.findByNegocio_IdAndAtivoTrue(negocioId);
         servicos.forEach(s -> s.setAtivo(false));
 
-        // Desvincula prestadores
+        // Desvincula prestadores e cancela agendamentos de todos
         List<Prestador> prestadores = prestadorRepository.findByNegocio_Id(negocioId);
-        prestadores.forEach(p -> p.setNegocio(null));
+        for (Prestador p : prestadores) {
+            // Cancela todos os agendamentos pendentes do prestador
+            List<Agendamento> ags = agendamentoRepository.findByPrestadorId(p.getId());
+            ags.stream()
+                    .filter(a -> a.getStatus() == StatusAgendamento.PENDENTE)
+                    .forEach(a -> a.setStatus(StatusAgendamento.CANCELADO));
+
+            p.setNegocio(null);
+        }
     }
 
     @Transactional
@@ -241,10 +256,6 @@ public class NegocioService {
                 .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
         return NegocioDTO.fromEntity(negocio);
     }
-
-
-
-
 
 
 }
