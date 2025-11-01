@@ -8,6 +8,8 @@ import com.java360.agendei.domain.model.PerfilUsuario;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Base64;
+
 @Data
 @Builder
 public class UsuarioDetalhadoDTO {
@@ -27,19 +29,28 @@ public class UsuarioDetalhadoDTO {
 
     // Apenas Prestador
     private NegocioResumoDTO negocio; // negócio vinculado
+    private String fotoPerfilBase64;
 
     public static UsuarioDetalhadoDTO fromEntity(Usuario usuario) {
         String cep = null;
         String endereco = null;
         String numero = null;
         NegocioResumoDTO negocio = null;
+        String fotoPerfilBase64 = null;
 
         if (usuario instanceof Cliente cliente) {
             cep = cliente.getCep();
             endereco = cliente.getEndereco();
             numero = cliente.getNumero();
-        } else if (usuario instanceof Prestador prestador && prestador.getNegocio() != null) {
-            negocio = NegocioResumoDTO.fromEntity(prestador.getNegocio());
+        }  else if (usuario instanceof Prestador prestador) {
+            if (prestador.getNegocio() != null) {
+                negocio = NegocioResumoDTO.fromEntity(prestador.getNegocio());
+            }
+
+            if (prestador.getFotoPerfil() != null) {
+                fotoPerfilBase64 = "data:image/jpeg;base64," +
+                        Base64.getEncoder().encodeToString(prestador.getFotoPerfil());
+            }
         }
 
         return UsuarioDetalhadoDTO.builder()
@@ -53,6 +64,7 @@ public class UsuarioDetalhadoDTO {
                 .endereco(endereco)
                 .numero(numero)
                 .negocio(negocio)
+                .fotoPerfilBase64(fotoPerfilBase64)
                 .build();
     }
 }

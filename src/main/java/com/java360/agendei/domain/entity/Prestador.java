@@ -10,13 +10,15 @@ import lombok.*;
 @Data
 public class Prestador extends Usuario {
 
-    @Column(length = 255)
-    private String bio;
-
     @ManyToOne
     @JoinColumn(name = "negocio_id")
     @ToString.Exclude // evita loop de referencia infinita
     @JsonIgnore
     private Negocio negocio;
+
+    @Lob
+    @Column(name = "foto_perfil", columnDefinition = "MEDIUMBLOB")
+    @ToString.Exclude
+    private byte[] fotoPerfil;
 
 }

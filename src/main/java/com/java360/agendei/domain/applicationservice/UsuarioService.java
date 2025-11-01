@@ -5,10 +5,12 @@ import com.java360.agendei.domain.entity.Cliente;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.infrastructure.dto.FotoPerfilDTO;
 import com.java360.agendei.infrastructure.dto.RegistroUsuarioDTO;
 import com.java360.agendei.infrastructure.dto.UsuarioDTO;
 import com.java360.agendei.infrastructure.dto.UsuarioDetalhadoDTO;
 import com.java360.agendei.infrastructure.security.JwtService;
+import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -158,6 +161,29 @@ public class UsuarioService {
 
         return usuariosPage.map(UsuarioDetalhadoDTO::fromEntity);
     }
+
+    @Transactional
+    public void atualizarFotoPerfil(MultipartFile arquivo) {
+        Usuario usuario = UsuarioAutenticado.get();
+
+        if (!(usuario instanceof Prestador prestador)) {
+            throw new IllegalArgumentException("Somente prestadores podem ter foto de perfil.");
+        }
+
+        try {
+            if (arquivo.isEmpty()) {
+                throw new IllegalArgumentException("Arquivo de imagem inválido ou vazio.");
+            }
+
+            byte[] bytes = arquivo.getBytes();
+            prestador.setFotoPerfil(bytes);
+            usuarioRepository.save(prestador);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao processar a imagem: " + e.getMessage());
+        }
+    }
+
 
 
 }

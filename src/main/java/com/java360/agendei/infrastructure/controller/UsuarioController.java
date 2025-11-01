@@ -2,6 +2,7 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.UsuarioService;
 import com.java360.agendei.domain.entity.Usuario;
+import com.java360.agendei.infrastructure.dto.FotoPerfilDTO;
 import com.java360.agendei.infrastructure.dto.RegistroUsuarioDTO;
 import com.java360.agendei.infrastructure.dto.UsuarioDTO;
 import com.java360.agendei.infrastructure.dto.UsuarioDetalhadoDTO;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -48,5 +50,15 @@ public class UsuarioController {
         );
         return ResponseEntity.ok(usuarios);
     }
+
+    @PutMapping(value = "/foto-perfil", consumes = "multipart/form-data")
+    public ResponseEntity<String> atualizarFotoPerfil(@RequestParam("arquivo") MultipartFile arquivo) {
+        usuarioService.atualizarFotoPerfil(arquivo);
+        return ResponseEntity.ok("Foto de perfil atualizada com sucesso.");
+    }
+
+    
+
+
 
 }

@@ -47,7 +47,6 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)//transforma a exceção na mensagem padrão do DTO
                 .toList();
 
-        //TODO é possível retornar mais detalhes, como campo que gerou o erro
         return handleException(ex, "ValidationError", null, details, BAD_REQUEST, request); // returna erro com detalhes
     }
 

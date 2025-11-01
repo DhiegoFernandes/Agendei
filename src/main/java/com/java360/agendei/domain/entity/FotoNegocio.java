@@ -17,6 +17,7 @@ public class FotoNegocio {
 
     @Lob // armazena binario grande no banco de dados
     @Column(nullable = false, columnDefinition = "MEDIUMBLOB")
+    @ToString.Exclude
     private byte[] imagem;
 
     @Column(nullable = false)
