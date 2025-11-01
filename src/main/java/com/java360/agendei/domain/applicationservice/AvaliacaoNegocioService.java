@@ -41,9 +41,11 @@ public class AvaliacaoNegocioService {
             throw new IllegalArgumentException("Só é possível avaliar após a conclusão do agendamento.");
         }
 
-        if (dto.getNota() < 0 || dto.getNota() > 5) {
-            throw new IllegalArgumentException("A nota deve estar entre 0 e 5.");
+        if (dto.getNota() < 1 || dto.getNota() > 5) {
+            throw new IllegalArgumentException("A nota deve estar entre 1 e 5.");
         }
+
+
 
         // Verifica se o cliente já avaliou o negócio
         AvaliacaoNegocio avaliacaoExistente = avaliacaoRepository

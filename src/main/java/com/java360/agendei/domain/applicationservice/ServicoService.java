@@ -43,6 +43,14 @@ public class ServicoService {
             throw new IllegalArgumentException("Prestador não está associado a um negócio.");
         }
 
+        if (dto.getDuracaoMinutos() > 480) {
+            throw new IllegalArgumentException("A duração máxima de um serviço é de 8 horas (480 minutos).");
+        }
+
+        if (dto.getValor() > 5000) {
+            throw new IllegalArgumentException("O valor máximo permitido para um serviço é de R$ 5000,00.");
+        }
+
         Negocio negocio = prestador.getNegocio();
         if (negocio == null) {
             throw new IllegalArgumentException("Você não está associado a um negócio.");
@@ -141,8 +149,6 @@ public class ServicoService {
         };
     }
 
-
-
     @Transactional
     public Servico atualizarServico(Integer id, SaveServicoDTO dto) {
         Usuario usuario = UsuarioAutenticado.get();
@@ -154,6 +160,13 @@ public class ServicoService {
         if (!servico.getPrestador().getId().equals(usuario.getId()) &&
                 !PermissaoUtils.isAdmin(usuario)) {
             throw new SecurityException("Você não tem permissão para editar este serviço.");
+        }
+
+        if (dto.getDuracaoMinutos() > 480) {
+            throw new IllegalArgumentException("A duração máxima de um serviço é de 8 horas (480 minutos).");
+        }
+        if (dto.getValor() > 5000) {
+            throw new IllegalArgumentException("O valor máximo permitido para um serviço é de R$ 5000,00.");
         }
 
         // Verifica duplicação de título para o mesmo prestador, ignorando o próprio serviço atual

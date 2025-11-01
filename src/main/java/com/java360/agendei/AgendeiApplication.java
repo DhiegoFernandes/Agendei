@@ -2,8 +2,10 @@ package com.java360.agendei;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling // essencial para ativar o @Scheduled (tarefa marcada)
 public class AgendeiApplication {
 
 	public static void main(String[] args) {

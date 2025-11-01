@@ -11,6 +11,7 @@ import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,14 @@ public class AgendamentoService {
     public Agendamento criarAgendamento(CreateAgendamentoDTO dto) {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
+
+        // Verifica se o cliente já possui 4 agendamentos pendentes
+        long agendamentosPendentes = agendamentoRepository.countByClienteIdAndStatus(
+                usuario.getId(), StatusAgendamento.PENDENTE);
+
+        if (agendamentosPendentes >= 4) {
+            throw new IllegalArgumentException("Você já possui o limite máximo de 4 agendamentos ativos.");
+        }
 
         if (dto.getServicoId() == null) {
             throw new IllegalArgumentException("O ID do serviço é obrigatório ao criar um agendamento.");
@@ -218,6 +227,25 @@ public class AgendamentoService {
 
         agendamento.setStatus(StatusAgendamento.CANCELADO);
     }
+
+    @Scheduled(fixedRate = 300000) // a cada 5 minutos verifica se agendamento passou o horário
+    @Transactional
+    public void concluirAgendamentosVencidos() {
+        List<Agendamento> pendentes = agendamentoRepository.findByStatus(StatusAgendamento.PENDENTE);
+        LocalDateTime agora = LocalDateTime.now();
+
+        // conclui agendamento pendente que passou o horario
+        for (Agendamento ag : pendentes) {
+            LocalDateTime fim = ag.getDataHora().plusMinutes(ag.getServico().getDuracaoMinutos());
+            if (fim.isBefore(agora)) {
+                ag.setStatus(StatusAgendamento.CONCLUIDO);
+                System.out.println("Agendamento #" + ag.getId() +
+                        " concluído automaticamente (término: " + fim + ")");
+
+            }
+        }
+    }
+
 
 }
 
