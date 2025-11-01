@@ -5,13 +5,10 @@ import com.java360.agendei.domain.entity.Cliente;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.repository.UsuarioRepository;
-import com.java360.agendei.infrastructure.dto.FotoPerfilDTO;
-import com.java360.agendei.infrastructure.dto.RegistroUsuarioDTO;
-import com.java360.agendei.infrastructure.dto.UsuarioDTO;
-import com.java360.agendei.infrastructure.dto.UsuarioDetalhadoDTO;
+import com.java360.agendei.infrastructure.dto.*;
 import com.java360.agendei.infrastructure.security.JwtService;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -183,6 +180,43 @@ public class UsuarioService {
             throw new RuntimeException("Erro ao processar a imagem: " + e.getMessage());
         }
     }
+
+    @Transactional(readOnly = true)
+    public FotoPrestadorDTO buscarFotoPerfilDTO(Integer prestadorId) {
+        Usuario usuario = usuarioRepository.findById(prestadorId)
+                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+
+        if (!(usuario instanceof Prestador prestador)) {
+            throw new IllegalArgumentException("Usuário não é um prestador.");
+        }
+
+        if (prestador.getFotoPerfil() == null) {
+            throw new IllegalArgumentException("Prestador não possui foto de perfil cadastrada.");
+        }
+
+        return new FotoPrestadorDTO(
+                prestador.getId(),
+                prestador.getNome(),
+                "/usuarios/" + prestador.getId() + "/foto-perfil"
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] buscarFotoPerfilBytes(Integer prestadorId) {
+        Usuario usuario = usuarioRepository.findById(prestadorId)
+                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+
+        if (!(usuario instanceof Prestador prestador)) {
+            throw new IllegalArgumentException("Usuário não é um prestador.");
+        }
+
+        if (prestador.getFotoPerfil() == null) {
+            throw new IllegalArgumentException("Prestador não possui foto de perfil cadastrada.");
+        }
+
+        return prestador.getFotoPerfil();
+    }
+
 
 
 

@@ -2,10 +2,7 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.UsuarioService;
 import com.java360.agendei.domain.entity.Usuario;
-import com.java360.agendei.infrastructure.dto.FotoPerfilDTO;
-import com.java360.agendei.infrastructure.dto.RegistroUsuarioDTO;
-import com.java360.agendei.infrastructure.dto.UsuarioDTO;
-import com.java360.agendei.infrastructure.dto.UsuarioDetalhadoDTO;
+import com.java360.agendei.infrastructure.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -51,13 +48,36 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
+    //Atualiza foto perfil
     @PutMapping(value = "/foto-perfil", consumes = "multipart/form-data")
     public ResponseEntity<String> atualizarFotoPerfil(@RequestParam("arquivo") MultipartFile arquivo) {
         usuarioService.atualizarFotoPerfil(arquivo);
         return ResponseEntity.ok("Foto de perfil atualizada com sucesso.");
     }
 
-    
+
+    // pega url da foto perfil
+    @GetMapping("/{id}/foto-perfil-url")
+    public ResponseEntity<FotoPrestadorDTO> getFotoPerfilUrl(@PathVariable Integer id) {
+        FotoPrestadorDTO dto = usuarioService.buscarFotoPerfilDTO(id);
+        return ResponseEntity.ok(dto);
+    }
+
+    // pega a foto (base64)
+    @GetMapping("/{id}/foto-perfil")
+    public ResponseEntity<byte[]> getFotoPerfil(@PathVariable Integer id) {
+        byte[] imagem = usuarioService.buscarFotoPerfilBytes(id);
+
+        // Detecta tipo de imagem (padrão: JPEG)
+        String contentType = "image/jpeg";
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=\"foto-perfil-" + id + ".jpg\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                .body(imagem);
+    }
+
+
+
 
 
 

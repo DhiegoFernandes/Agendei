@@ -29,14 +29,14 @@ public class UsuarioDetalhadoDTO {
 
     // Apenas Prestador
     private NegocioResumoDTO negocio; // negócio vinculado
-    private String fotoPerfilBase64;
+    private String fotoPerfilUrl;
 
     public static UsuarioDetalhadoDTO fromEntity(Usuario usuario) {
         String cep = null;
         String endereco = null;
         String numero = null;
         NegocioResumoDTO negocio = null;
-        String fotoPerfilBase64 = null;
+        String fotoPerfilUrl = null;
 
         if (usuario instanceof Cliente cliente) {
             cep = cliente.getCep();
@@ -48,8 +48,7 @@ public class UsuarioDetalhadoDTO {
             }
 
             if (prestador.getFotoPerfil() != null) {
-                fotoPerfilBase64 = "data:image/jpeg;base64," +
-                        Base64.getEncoder().encodeToString(prestador.getFotoPerfil());
+                fotoPerfilUrl = "/usuarios/" + prestador.getId() + "/foto-perfil";
             }
         }
 
@@ -64,7 +63,7 @@ public class UsuarioDetalhadoDTO {
                 .endereco(endereco)
                 .numero(numero)
                 .negocio(negocio)
-                .fotoPerfilBase64(fotoPerfilBase64)
+                .fotoPerfilUrl(fotoPerfilUrl)
                 .build();
     }
 }
