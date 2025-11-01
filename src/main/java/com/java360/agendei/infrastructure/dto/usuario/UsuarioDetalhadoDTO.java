@@ -3,12 +3,10 @@ package com.java360.agendei.infrastructure.dto;
 import com.java360.agendei.domain.entity.Cliente;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
-import com.java360.agendei.domain.entity.Negocio;
 import com.java360.agendei.domain.model.PerfilUsuario;
+import com.java360.agendei.infrastructure.dto.negocio.NegocioResumoDTO;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.Base64;
 
 @Data
 @Builder
