@@ -66,6 +66,7 @@ public class AgendamentoService {
         // Verifica sobreposição de horários
         List<Agendamento> agendamentosExistentes = agendamentoRepository.findByPrestadorId(prestador.getId());
         boolean conflita = agendamentosExistentes.stream()
+                .filter(ag -> ag.getStatus() == StatusAgendamento.PENDENTE) // ignora cancelados e concluídos
                 .anyMatch(ag -> overlaps(
                         inicio, fim,
                         ag.getDataHora(),
@@ -144,6 +145,7 @@ public class AgendamentoService {
         List<Agendamento> agendamentosExistentes = agendamentoRepository.findByPrestadorId(prestador.getId());
         boolean conflita = agendamentosExistentes.stream()
                 .filter(a -> !a.getId().equals(agendamento.getId()))
+                .filter(a -> a.getStatus() == StatusAgendamento.PENDENTE) // só verifica pendentes
                 .anyMatch(a -> overlaps(
                         inicio, fim,
                         a.getDataHora(),

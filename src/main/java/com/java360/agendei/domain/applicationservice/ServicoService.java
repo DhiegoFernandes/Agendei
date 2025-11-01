@@ -4,6 +4,7 @@ import com.java360.agendei.domain.entity.*;
 import com.java360.agendei.domain.model.CategoriaServico;
 import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import com.java360.agendei.domain.model.PerfilUsuario;
+import com.java360.agendei.domain.model.StatusAgendamento;
 import com.java360.agendei.domain.repository.*;
 import com.java360.agendei.infrastructure.dto.*;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
@@ -86,9 +87,10 @@ public class ServicoService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("O prestador não tem disponibilidade nesse dia."));
 
-        // Agendamentos já marcados para aquele dia
-        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorIdAndDataHoraBetween(
+        // Agendamentos PENDENTES para aquele dia (ignora cancelados e concluídos)
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorIdAndStatusAndDataHoraBetween(
                 prestador.getId(),
+                StatusAgendamento.PENDENTE,
                 dataSelecionada.atStartOfDay(),
                 dataSelecionada.plusDays(1).atStartOfDay()
         );
