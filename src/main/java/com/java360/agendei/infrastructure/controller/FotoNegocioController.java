@@ -3,7 +3,7 @@ package com.java360.agendei.infrastructure.controller;
 import com.java360.agendei.domain.applicationservice.FotoNegocioService;
 import com.java360.agendei.domain.entity.FotoNegocio;
 import com.java360.agendei.domain.repository.FotoNegocioRepository;
-import com.java360.agendei.infrastructure.dto.FotoNegocioDTO;
+import com.java360.agendei.infrastructure.dto.negocio.FotoNegocioDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

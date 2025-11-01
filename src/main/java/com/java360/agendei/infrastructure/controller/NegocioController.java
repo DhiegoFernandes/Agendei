@@ -1,16 +1,15 @@
 package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.NegocioService;
-import com.java360.agendei.domain.entity.Negocio;
 import com.java360.agendei.domain.model.CategoriaNegocio;
 import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.infrastructure.dto.*;
+import com.java360.agendei.infrastructure.dto.negocio.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController

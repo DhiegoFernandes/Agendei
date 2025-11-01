@@ -1,4 +1,4 @@
-package com.java360.agendei.infrastructure.dto;
+package com.java360.agendei.infrastructure.dto.negocio;
 
 import com.java360.agendei.domain.model.CategoriaNegocio;
 import com.fasterxml.jackson.annotation.JsonInclude;

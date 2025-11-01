@@ -1,4 +1,4 @@
-package com.java360.agendei.infrastructure.dto;
+package com.java360.agendei.infrastructure.dto.negocio;
 
 import lombok.Builder;
 import lombok.Data;

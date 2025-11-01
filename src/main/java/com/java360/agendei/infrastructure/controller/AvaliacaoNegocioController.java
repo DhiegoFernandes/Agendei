@@ -1,8 +1,8 @@
 package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.AvaliacaoNegocioService;
-import com.java360.agendei.infrastructure.dto.AvaliacaoNegocioDTO;
-import com.java360.agendei.infrastructure.dto.CreateAvaliacaoNegocioDTO;
+import com.java360.agendei.infrastructure.dto.negocio.AvaliacaoNegocioDTO;
+import com.java360.agendei.infrastructure.dto.negocio.CreateAvaliacaoNegocioDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,10 +1,10 @@
 package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.AuthService;
-import com.java360.agendei.infrastructure.dto.AuthRequestDTO;
-import com.java360.agendei.infrastructure.dto.AuthResponseDTO;
-import com.java360.agendei.infrastructure.dto.TokenRequestDTO;
-import com.java360.agendei.infrastructure.dto.TokenValidationResponseDTO;
+import com.java360.agendei.infrastructure.dto.usuario.AuthRequestDTO;
+import com.java360.agendei.infrastructure.dto.usuario.AuthResponseDTO;
+import com.java360.agendei.infrastructure.dto.usuario.TokenRequestDTO;
+import com.java360.agendei.infrastructure.dto.usuario.TokenValidationResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

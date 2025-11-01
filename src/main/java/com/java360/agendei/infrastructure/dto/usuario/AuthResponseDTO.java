@@ -1,6 +1,5 @@
-package com.java360.agendei.infrastructure.dto;
+package com.java360.agendei.infrastructure.dto.usuario;
 
-import com.java360.agendei.domain.model.PerfilUsuario;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

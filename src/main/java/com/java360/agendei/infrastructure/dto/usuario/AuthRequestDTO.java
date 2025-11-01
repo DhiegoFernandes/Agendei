@@ -1,4 +1,4 @@
-package com.java360.agendei.infrastructure.dto;
+package com.java360.agendei.infrastructure.dto.usuario;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

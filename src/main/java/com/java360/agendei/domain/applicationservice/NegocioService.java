@@ -8,6 +8,7 @@ import com.java360.agendei.domain.repository.PrestadorRepository;
 import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.*;
+import com.java360.agendei.infrastructure.dto.negocio.*;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import com.java360.agendei.infrastructure.util.DistanciaUtils;

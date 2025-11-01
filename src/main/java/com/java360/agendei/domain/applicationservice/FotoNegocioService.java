@@ -6,7 +6,7 @@ import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.repository.FotoNegocioRepository;
 import com.java360.agendei.domain.repository.NegocioRepository;
-import com.java360.agendei.infrastructure.dto.FotoNegocioDTO;
+import com.java360.agendei.infrastructure.dto.negocio.FotoNegocioDTO;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import com.java360.agendei.domain.model.PerfilUsuario;

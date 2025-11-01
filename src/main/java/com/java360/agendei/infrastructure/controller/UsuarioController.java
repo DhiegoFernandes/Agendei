@@ -2,15 +2,16 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.UsuarioService;
 import com.java360.agendei.domain.entity.Usuario;
-import com.java360.agendei.infrastructure.dto.*;
+import com.java360.agendei.infrastructure.dto.usuario.FotoPrestadorDTO;
+import com.java360.agendei.infrastructure.dto.usuario.RegistroUsuarioDTO;
+import com.java360.agendei.infrastructure.dto.usuario.UsuarioDTO;
+import com.java360.agendei.infrastructure.dto.usuario.UsuarioDetalhadoDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")

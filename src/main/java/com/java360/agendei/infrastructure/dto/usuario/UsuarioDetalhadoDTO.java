@@ -1,4 +1,4 @@
-package com.java360.agendei.infrastructure.dto;
+package com.java360.agendei.infrastructure.dto.usuario;
 
 import com.java360.agendei.domain.entity.Cliente;
 import com.java360.agendei.domain.entity.Prestador;

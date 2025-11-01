@@ -5,7 +5,9 @@ import com.java360.agendei.domain.entity.Cliente;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.repository.UsuarioRepository;
-import com.java360.agendei.infrastructure.dto.*;
+import com.java360.agendei.infrastructure.dto.usuario.FotoPrestadorDTO;
+import com.java360.agendei.infrastructure.dto.usuario.RegistroUsuarioDTO;
+import com.java360.agendei.infrastructure.dto.usuario.UsuarioDetalhadoDTO;
 import com.java360.agendei.infrastructure.security.JwtService;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +19,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
