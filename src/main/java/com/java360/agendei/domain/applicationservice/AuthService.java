@@ -19,7 +19,8 @@ public class AuthService {
     private final JwtService jwtService;
 
     public AuthResponseDTO login(AuthRequestDTO dto) {
-        Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
+        String emailNormalizado = dto.getEmail().toLowerCase().trim();
+        Usuario usuario = usuarioRepository.findByEmail(emailNormalizado)
                 .orElseThrow(() -> new RequestException("AuthError", "Email ou senha inválidos"));
 
         if (!passwordEncoder.matches(dto.getSenha(), usuario.getSenha())) {

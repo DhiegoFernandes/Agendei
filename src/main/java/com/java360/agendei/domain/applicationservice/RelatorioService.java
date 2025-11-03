@@ -1,14 +1,18 @@
 package com.java360.agendei.domain.applicationservice;
 
 import com.java360.agendei.domain.entity.Agendamento;
+import com.java360.agendei.domain.entity.Negocio;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.model.StatusAgendamento;
 import com.java360.agendei.domain.repository.AgendamentoRepository;
+import com.java360.agendei.domain.repository.NegocioRepository;
+import com.java360.agendei.domain.repository.PrestadorRepository;
 import com.java360.agendei.infrastructure.dto.relatorios.*;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +28,9 @@ import java.util.stream.Collectors;
 public class RelatorioService {
 
     private final AgendamentoRepository agendamentoRepository;
+    private final NegocioRepository negocioRepository;
+    private final PrestadorRepository prestadorRepository;
+
 
     private Integer getPrestadorIdFromToken() {
         Usuario usuario = UsuarioAutenticado.get();
@@ -38,7 +45,7 @@ public class RelatorioService {
 
     // Ganhos esperados / realizados / taxa de cancelamento
     public RelatorioFinanceiroDTO relatorioFinanceiroMensal(YearMonth mes) {
-        Integer prestadorId = getPrestadorIdFromToken();
+        Integer prestadorId  = getPrestadorIdFromToken();
 
         LocalDate inicio = mes.atDay(1);
         LocalDate fim = mes.atEndOfMonth();
@@ -137,5 +144,75 @@ public class RelatorioService {
                 .sorted((a, b) -> Long.compare(b.getQuantidadeAgendamentos(), a.getQuantidadeAgendamentos()))
                 .toList();
     }
+
+    @Transactional
+    public RelatorioNegocioDTO relatorioNegocio(Integer negocioId, YearMonth mes) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
+
+        // Buscar o negócio
+        Negocio negocio = negocioRepository.findById(negocioId)
+                .orElseThrow(() -> new IllegalArgumentException("Negócio não encontrado."));
+
+        // Apenas o dono ou admin pode ver
+        boolean isDono = negocio.getCriador().getId().equals(usuario.getId());
+        if (!isDono && !PermissaoUtils.isAdmin(usuario)) {
+            throw new SecurityException("Apenas o dono do negócio pode visualizar este relatório.");
+        }
+
+        LocalDate inicio = mes.atDay(1);
+        LocalDate fim = mes.atEndOfMonth();
+
+        // Buscar todos agendamentos no período
+        List<Agendamento> agendamentos = agendamentoRepository.findAll().stream()
+                .filter(a -> a.getPrestador() != null)
+                .filter(a -> a.getPrestador().getNegocio() != null)
+                .filter(a -> a.getPrestador().getNegocio().getId().equals(negocioId))
+                .filter(a -> !a.getDataHora().isBefore(inicio.atStartOfDay()) && !a.getDataHora().isAfter(fim.atTime(23, 59)))
+                .toList();
+
+        // Totais gerais
+        BigDecimal ganhosTotais = agendamentos.stream()
+                .filter(a -> a.getStatus() == StatusAgendamento.CONCLUIDO)
+                .map(a -> BigDecimal.valueOf(a.getServico().getValor()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        long totalServicos = agendamentos.stream()
+                .filter(a -> a.getStatus() == StatusAgendamento.CONCLUIDO)
+                .count();
+
+        // Lista de prestadores do negócio
+        List<Prestador> todosPrestadores = prestadorRepository.findByNegocio_Id(negocioId);
+
+        // Monta relatório por prestador
+        List<PrestadorRelatorioDTO> relatorioPrestadores = todosPrestadores.stream().map(prestador -> {
+            List<Agendamento> agsPrestador = agendamentos.stream()
+                    .filter(a -> a.getPrestador().getId().equals(prestador.getId()))
+                    .toList();
+
+            // ganhos
+            BigDecimal ganhos = agsPrestador.stream()
+                    .filter(a -> a.getStatus() == StatusAgendamento.CONCLUIDO)
+                    .map(a -> BigDecimal.valueOf(a.getServico().getValor()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            // taxa de cancelamento
+            long total = agsPrestador.size();
+            long cancelados = agsPrestador.stream().filter(a -> a.getStatus() == StatusAgendamento.CANCELADO).count();
+            double taxaCancelamento = total > 0 ? (cancelados * 100.0 / total) : 0.0;
+
+            return new PrestadorRelatorioDTO(prestador.getId(), prestador.getNome(), ganhos, taxaCancelamento);
+        }).toList();
+
+        return new RelatorioNegocioDTO(
+                negocio.getNome(),
+                mes,
+                ganhosTotais,
+                totalServicos,
+                relatorioPrestadores
+        );
+    }
+
+
 
 }

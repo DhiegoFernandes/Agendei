@@ -30,8 +30,17 @@ public class UsuarioService {
 
     @Transactional
     public Usuario registrarUsuario(RegistroUsuarioDTO dto) {
-        if (usuarioRepository.existsByEmail(dto.getEmail())) {
+
+        // email sempre é salvo minusculo
+        String emailNormalizado = dto.getEmail().toLowerCase().trim();
+        if (usuarioRepository.existsByEmail(emailNormalizado)) {
             throw new IllegalArgumentException("E-mail já está em uso.");
+        }
+
+        // Senha deve ter 8 caracteres, contendo letra maiúscula, minúscula, número e caractere especial
+        String senha = dto.getSenha();
+        if (!senha.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._#-]).{8,}$")) {
+            throw new IllegalArgumentException("A senha deve conter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.");
         }
 
         String senhaCriptografada = passwordEncoder.encode(dto.getSenha());
@@ -54,7 +63,7 @@ public class UsuarioService {
         }
 
         usuario.setNome(dto.getNome());
-        usuario.setEmail(dto.getEmail());
+        usuario.setEmail(emailNormalizado);
         usuario.setTelefone(dto.getTelefone());
         usuario.setSenha(senhaCriptografada);
         usuario.setAtivo(true);

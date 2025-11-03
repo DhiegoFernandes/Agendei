@@ -5,10 +5,7 @@ import com.java360.agendei.infrastructure.dto.relatorios.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
 import java.util.List;
@@ -44,5 +41,20 @@ public class RelatorioController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mes) {
         return ResponseEntity.ok(relatorioService.servicosMaisVendidos(mes));
     }
+
+
+    // ########## Relatorios do prestador dono do negocio ########
+
+    @GetMapping("/negocio/{id}")
+    public ResponseEntity<RelatorioNegocioDTO> relatorioNegocio(
+            @PathVariable Integer id,
+            @RequestParam int ano,
+            @RequestParam int mes
+    ) {
+        YearMonth yearMonth = YearMonth.of(ano, mes);
+        RelatorioNegocioDTO relatorio = relatorioService.relatorioNegocio(id, yearMonth);
+        return ResponseEntity.ok(relatorio);
+    }
+
 
 }
