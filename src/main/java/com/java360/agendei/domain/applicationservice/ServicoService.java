@@ -95,7 +95,7 @@ public class ServicoService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("O prestador não tem disponibilidade nesse dia."));
 
-        // Agendamentos PENDENTES para aquele dia (ignora cancelados e concluídos)
+        // Busca agendamentos pendentes do dia
         List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorIdAndStatusAndDataHoraBetween(
                 prestador.getId(),
                 StatusAgendamento.PENDENTE,
@@ -104,13 +104,26 @@ public class ServicoService {
         );
 
         List<String> horariosDisponiveis = new ArrayList<>();
+        LocalTime horaAtual = LocalTime.now();
         LocalTime hora = disponibilidade.getHoraInicio();
         LocalTime limite = disponibilidade.getHoraFim().minusMinutes(duracao);
+
+        // Se a data for anterior à atual, retorna lista vazia
+        if (dataSelecionada.isBefore(LocalDate.now())) {
+            return new HorariosDisponiveisDTO(servicoId, List.of());
+        }
 
         while (!hora.isAfter(limite)) {
             LocalTime inicio = hora;
             LocalTime fim = hora.plusMinutes(duracao);
 
+            // Se for hoje e horário já passou, ignora
+            if (dataSelecionada.isEqual(LocalDate.now()) && inicio.isBefore(horaAtual)) {
+                hora = hora.plusMinutes(duracao);
+                continue;
+            }
+
+            // Verifica conflitos com agendamentos pendentes
             boolean conflita = agendamentos.stream().anyMatch(ag ->
                     overlaps(inicio, fim,
                             ag.getDataHora().toLocalTime(),
@@ -126,11 +139,15 @@ public class ServicoService {
 
         List<HorariosPorDiaDTO> dias = new ArrayList<>();
         if (!horariosDisponiveis.isEmpty()) {
-            dias.add(new HorariosPorDiaDTO(DiaSemanaDisponivel.valueOf(traduzirDiaDaSemana(diaSemana)), horariosDisponiveis));
+            dias.add(new HorariosPorDiaDTO(
+                    DiaSemanaDisponivel.valueOf(traduzirDiaDaSemana(diaSemana)),
+                    horariosDisponiveis
+            ));
         }
 
         return new HorariosDisponiveisDTO(servicoId, dias);
     }
+
 
 
     private boolean overlaps(LocalTime inicio1, LocalTime fim1, LocalTime inicio2, LocalTime fim2) {
