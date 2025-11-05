@@ -1,6 +1,9 @@
 package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.AuthService;
+import com.java360.agendei.infrastructure.dto.NovaSenhaDTO;
+import com.java360.agendei.infrastructure.dto.RecuperacaoSenhaRequestDTO;
+import com.java360.agendei.infrastructure.dto.VerificarCodigoDTO;
 import com.java360.agendei.infrastructure.dto.usuario.AuthRequestDTO;
 import com.java360.agendei.infrastructure.dto.usuario.AuthResponseDTO;
 import com.java360.agendei.infrastructure.dto.usuario.TokenRequestDTO;
@@ -31,4 +34,23 @@ public class AuthController {
         boolean valido = authService.isTokenValid(dto.getToken());
         return ResponseEntity.ok(new TokenValidationResponseDTO(valido));
     }
+
+    @PostMapping("/recuperar-senha")
+    public ResponseEntity<String> solicitarRecuperacao(@RequestBody @Valid RecuperacaoSenhaRequestDTO dto) {
+        authService.solicitarRecuperacao(dto);
+        return ResponseEntity.ok("Código de recuperação enviado para o e-mail.");
+    }
+
+    @PostMapping("/verificar-codigo")
+    public ResponseEntity<String> verificarCodigo(@RequestBody @Valid VerificarCodigoDTO dto) {
+        authService.verificarCodigo(dto);
+        return ResponseEntity.ok("Código válido.");
+    }
+
+    @PostMapping("/nova-senha")
+    public ResponseEntity<String> redefinirSenha(@RequestBody @Valid NovaSenhaDTO dto) {
+        authService.redefinirSenha(dto);
+        return ResponseEntity.ok("Senha redefinida com sucesso.");
+    }
+
 }
