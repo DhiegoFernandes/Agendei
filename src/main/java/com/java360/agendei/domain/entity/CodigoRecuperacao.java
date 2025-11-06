@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CodigoRecuperacao {
 
     @Id
@@ -28,4 +28,8 @@ public class CodigoRecuperacao {
 
     @Column(nullable = false)
     private LocalDateTime expiraEm;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean ativo = true;
 }

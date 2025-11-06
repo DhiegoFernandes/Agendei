@@ -23,13 +23,13 @@ public class EmailService {
     public void enviarCodigoRecuperacao(String email, String codigo) {
         try {
             String assunto = "Recuperação de Senha - Agendei";
-            String link = "https://agendei.com.br/redefinir-senha?email=" + email + "&codigo=" + codigo;
+            String link = "(LINK DE INSERIR SENHA)" + email + "&codigo=" + codigo;
 
             String html = """
                     <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
                         <div style="max-width:600px; margin:auto; background:white; padding:30px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                             <div style="text-align:center; margin-bottom:30px;">
-                                <img src="https://i.imgur.com/6xgYbBt.png" alt="Logo Agendei" width="160"/>
+                                <img src="https://i.imgur.com/k3l8Ynj.png" alt="Logo Agendei" width="160"/>
                             </div>
                             <h2 style="color:#333;">Olá!</h2>
                             <p style="font-size:16px; color:#555;">

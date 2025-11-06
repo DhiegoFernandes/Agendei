@@ -12,7 +12,7 @@ import com.java360.agendei.infrastructure.dto.usuario.AuthResponseDTO;
 import com.java360.agendei.infrastructure.email.EmailService;
 import com.java360.agendei.infrastructure.exception.RequestException;
 import com.java360.agendei.infrastructure.security.JwtService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -49,59 +49,63 @@ public class AuthService {
         return jwtService.isValid(token);
     }
 
-    // Solicitar recuperação de senha
+    // --- Solicitar recuperação ---
+    @Transactional
     public void solicitarRecuperacao(RecuperacaoSenhaRequestDTO dto) {
         String email = dto.getEmail().toLowerCase().trim();
 
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("E-mail não encontrado."));
 
-        // gera código de 6 dígitos
         String codigo = String.format("%06d", new Random().nextInt(999999));
 
-        // remove códigos anteriores
-        codigoRepo.deleteByEmail(email);
-
+        // cria novo registro (sem deletar o anterior)
         CodigoRecuperacao novoCodigo = CodigoRecuperacao.builder()
                 .email(email)
                 .codigo(codigo)
                 .expiraEm(LocalDateTime.now().plusMinutes(10))
+                .ativo(true)
                 .build();
 
         codigoRepo.save(novoCodigo);
 
-        // envia email
         emailService.enviarCodigoRecuperacao(email, codigo);
     }
 
-    // Verificar código
+    // --- Verificar código ---
+    @Transactional(readOnly = true)
     public boolean verificarCodigo(VerificarCodigoDTO dto) {
         var registro = codigoRepo.findByEmailAndCodigo(dto.getEmail(), dto.getCodigo())
                 .orElseThrow(() -> new IllegalArgumentException("Código inválido."));
 
         if (registro.getExpiraEm().isBefore(LocalDateTime.now())) {
-            codigoRepo.deleteByEmail(dto.getEmail());
             throw new IllegalArgumentException("Código expirado.");
+        }
+
+        if (!registro.isAtivo()) {
+            throw new IllegalArgumentException("Código já utilizado.");
         }
 
         return true;
     }
 
-    // Redefinir senha
+    // --- Redefinir senha ---
     @Transactional
     public void redefinirSenha(NovaSenhaDTO dto) {
         var registro = codigoRepo.findByEmailAndCodigo(dto.getEmail(), dto.getCodigo())
                 .orElseThrow(() -> new IllegalArgumentException("Código inválido."));
 
         if (registro.getExpiraEm().isBefore(LocalDateTime.now())) {
-            codigoRepo.deleteByEmail(dto.getEmail());
             throw new IllegalArgumentException("Código expirado.");
+        }
+
+        if (!registro.isAtivo()) {
+            throw new IllegalArgumentException("Código já utilizado.");
         }
 
         Usuario usuario = usuarioRepository.findByEmail(dto.getEmail().toLowerCase().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-        // valida a nova senha
         if (!dto.getNovaSenha().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._#-]).{8,}$")) {
             throw new IllegalArgumentException("A senha deve conter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.");
         }
@@ -109,7 +113,8 @@ public class AuthService {
         usuario.setSenha(passwordEncoder.encode(dto.getNovaSenha()));
         usuarioRepository.save(usuario);
 
-        // apaga o código após uso
-        codigoRepo.deleteByEmail(dto.getEmail());
+        // marca o código como utilizado (não exclui)
+        registro.setAtivo(false);
+        codigoRepo.save(registro);
     }
 }
