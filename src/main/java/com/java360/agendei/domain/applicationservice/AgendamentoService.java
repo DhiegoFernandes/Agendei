@@ -248,21 +248,41 @@ public class AgendamentoService {
 
         Prestador prestador = (Prestador) usuario;
 
-        // Busca todos os clientes que já fizeram agendamentos com este prestador
         List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
 
         return agendamentos.stream()
                 .map(Agendamento::getCliente)
                 .distinct()
                 .map(c -> {
+                    long total = agendamentos.stream()
+                            .filter(a -> a.getCliente().getId().equals(c.getId()))
+                            .count();
+
+                    long cancelados = agendamentos.stream()
+                            .filter(a -> a.getCliente().getId().equals(c.getId()))
+                            .filter(a -> a.getStatus() == StatusAgendamento.CANCELADO)
+                            .count();
+
+                    double taxa = (total > 0) ? ((double) cancelados / total) * 100 : 0.0;
+
                     boolean bloqueado = clienteBloqueadoRepository
                             .findByPrestadorIdAndClienteId(prestador.getId(), c.getId())
                             .map(ClienteBloqueado::isAtivo)
                             .orElse(false);
-                    return new ClienteResumoDTO(c.getId(), c.getNome(), c.getEmail(), c.getTelefone(), bloqueado);
+
+                    return new ClienteResumoDTO(
+                            c.getId(),
+                            c.getNome(),
+                            c.getEmail(),
+                            c.getTelefone(),
+                            bloqueado,
+                            Math.round(taxa * 100.0) / 100.0
+                    );
                 })
                 .toList();
     }
+
+
 
     @Transactional
     public List<ClienteResumoDTO> listarClientesBloqueados() {
@@ -277,19 +297,37 @@ public class AgendamentoService {
                 .filter(ClienteBloqueado::isAtivo)
                 .toList();
 
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+
         return bloqueios.stream()
                 .map(b -> {
                     Cliente c = b.getCliente();
+
+                    // Conta total e cancelados desse cliente
+                    long total = agendamentos.stream()
+                            .filter(a -> a.getCliente().getId().equals(c.getId()))
+                            .count();
+
+                    long cancelados = agendamentos.stream()
+                            .filter(a -> a.getCliente().getId().equals(c.getId()))
+                            .filter(a -> a.getStatus() == StatusAgendamento.CANCELADO)
+                            .count();
+
+                    // Taxa de cancelamento (0.0 padrão)
+                    double taxa = (total > 0) ? ((double) cancelados / total) * 100 : 0.0;
+
                     return new ClienteResumoDTO(
                             c.getId(),
                             c.getNome(),
                             c.getEmail(),
                             c.getTelefone(),
-                            true
+                            true, // bloqueado
+                            Math.round(taxa * 100.0) / 100.0 // arredondado para 2 casas
                     );
                 })
                 .toList();
     }
+
 
     @Transactional
     public void bloquearCliente(Integer clienteId) {

@@ -11,4 +11,5 @@ public class ClienteResumoDTO {
     private String email;
     private String telefone;
     private boolean bloqueado;
+    private double taxaCancelamento; // em percentual
 }
