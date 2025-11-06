@@ -7,6 +7,7 @@ import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.model.PlanoPrestador;
 import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.infrastructure.dto.usuario.AtualizarPrestadorDTO;
 import com.java360.agendei.infrastructure.dto.usuario.FotoPrestadorDTO;
 import com.java360.agendei.infrastructure.dto.usuario.RegistroUsuarioDTO;
 import com.java360.agendei.infrastructure.dto.usuario.UsuarioDetalhadoDTO;
@@ -188,6 +189,34 @@ public class UsuarioService {
         Page<Usuario> usuariosPage = usuarioRepository.buscarComFiltros(perfil, nome, email, telefone, pageable);
 
         return usuariosPage.map(UsuarioDetalhadoDTO::fromEntity);
+    }
+
+    @Transactional
+    public UsuarioDetalhadoDTO atualizarDadosPrestador(AtualizarPrestadorDTO dto) {
+        Usuario usuario = UsuarioAutenticado.get();
+
+        // Somente prestadores podem alterar seus próprios dados
+        if (!(usuario instanceof Prestador prestador)) {
+            throw new SecurityException("Apenas prestadores podem atualizar seus dados pessoais.");
+        }
+
+        // Normaliza e-mail
+        String emailNormalizado = dto.getEmail().toLowerCase().trim();
+
+        // Verifica duplicidade de e-mail
+        usuarioRepository.findByEmail(emailNormalizado).ifPresent(u -> {
+            if (!u.getId().equals(prestador.getId())) {
+                throw new IllegalArgumentException("E-mail já está em uso por outro usuário.");
+            }
+        });
+
+        // Atualiza os dados
+        prestador.setNome(dto.getNome());
+        prestador.setEmail(emailNormalizado);
+        prestador.setTelefone(dto.getTelefone());
+
+        usuarioRepository.save(prestador);
+        return UsuarioDetalhadoDTO.fromEntity(prestador);
     }
 
     @Transactional

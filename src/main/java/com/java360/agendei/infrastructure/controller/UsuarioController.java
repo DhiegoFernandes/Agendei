@@ -3,10 +3,7 @@ package com.java360.agendei.infrastructure.controller;
 import com.java360.agendei.domain.applicationservice.UsuarioService;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.PlanoPrestador;
-import com.java360.agendei.infrastructure.dto.usuario.FotoPrestadorDTO;
-import com.java360.agendei.infrastructure.dto.usuario.RegistroUsuarioDTO;
-import com.java360.agendei.infrastructure.dto.usuario.UsuarioDTO;
-import com.java360.agendei.infrastructure.dto.usuario.UsuarioDetalhadoDTO;
+import com.java360.agendei.infrastructure.dto.usuario.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -76,6 +73,13 @@ public class UsuarioController {
                 .header("Content-Disposition", "inline; filename=\"foto-perfil-" + id + ".jpg\"")
                 .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
                 .body(imagem);
+    }
+
+    @PutMapping("/me/atualizar")
+    public ResponseEntity<UsuarioDetalhadoDTO> atualizarDadosPrestador(
+            @RequestBody @Valid AtualizarPrestadorDTO dto) {
+        UsuarioDetalhadoDTO atualizado = usuarioService.atualizarDadosPrestador(dto);
+        return ResponseEntity.ok(atualizado);
     }
 
 
