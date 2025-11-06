@@ -3,6 +3,7 @@ package com.java360.agendei.domain.applicationservice;
 import com.java360.agendei.domain.entity.*;
 import com.java360.agendei.domain.model.CategoriaNegocio;
 import com.java360.agendei.domain.model.PerfilUsuario;
+import com.java360.agendei.domain.model.PlanoPrestador;
 import com.java360.agendei.domain.model.StatusAgendamento;
 import com.java360.agendei.domain.repository.*;
 import com.java360.agendei.infrastructure.dto.*;
@@ -119,32 +120,47 @@ public class NegocioService {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR, PerfilUsuario.ADMIN);
 
-        Prestador prestador = (Prestador) usuario;
-        Negocio negocio = prestador.getNegocio();
+        Prestador prestadorDono = (Prestador) usuario;
+        Negocio negocio = prestadorDono.getNegocio();
         if (negocio == null) {
             throw new IllegalArgumentException("Você não está vinculado a nenhum negócio.");
         }
 
-        if (!negocio.getCriador().getId().equals(prestador.getId()) &&
-                !PermissaoUtils.isAdmin(usuario)) {
+        if (!negocio.getCriador().getId().equals(prestadorDono.getId()) && !PermissaoUtils.isAdmin(usuario)) {
             throw new IllegalArgumentException("Apenas o dono do negócio pode convidar prestadores.");
         }
 
-        // Busca o usuário pelo e-mail e valida se é um Prestador
-        Usuario usuarioConvidado = usuarioRepository.findByEmail(dto.getEmailPrestador())
+        // Normaliza o e-mail antes da busca
+        String emailNormalizado = dto.getEmailPrestador().toLowerCase().trim();
+
+        // Verifica o limite do plano
+        PlanoPrestador plano = prestadorDono.getPlano();
+        long quantidadeAtual = prestadorRepository.findByNegocio_Id(negocio.getId()).size() - 1;
+
+        if (quantidadeAtual >= plano.getLimiteConvites()) {
+            throw new IllegalArgumentException(
+                    String.format("Seu plano (%s) permite no máximo %d prestadores adicionais. Faça um upgrade para adicionar mais.",
+                            plano.name(), plano.getLimiteConvites())
+            );
+        }
+
+        // Busca o prestador com e-mail normalizado
+        Usuario usuarioConvidado = usuarioRepository.findByEmail(emailNormalizado)
                 .orElseThrow(() -> new IllegalArgumentException("Prestador com esse e-mail não existe."));
 
         if (!(usuarioConvidado instanceof Prestador prestadorConvidado)) {
             throw new IllegalArgumentException("Usuário convidado não é um prestador.");
         }
+
         if (prestadorConvidado.getNegocio() != null) {
             throw new IllegalArgumentException("Prestador já está vinculado a outro negócio.");
         }
 
-        // Associa o prestador convidado ao negócio
         prestadorConvidado.setNegocio(negocio);
-        usuarioRepository.save(prestadorConvidado); // garantir persistência
+        usuarioRepository.save(prestadorConvidado);
     }
+
+
 
     // Sair prestador convidado
     @Transactional
@@ -211,6 +227,7 @@ public class NegocioService {
         }
     }
 
+    // Todo ADD LIMITE 20KM
     @Transactional
     public List<NegocioBuscaDTO> buscarNegociosProximos(String nome, CategoriaNegocio categoria) {
         Usuario usuario = UsuarioAutenticado.get();

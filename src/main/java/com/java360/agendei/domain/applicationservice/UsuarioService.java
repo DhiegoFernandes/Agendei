@@ -4,11 +4,14 @@ import com.java360.agendei.domain.entity.Administrador;
 import com.java360.agendei.domain.entity.Cliente;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
+import com.java360.agendei.domain.model.PerfilUsuario;
+import com.java360.agendei.domain.model.PlanoPrestador;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.usuario.FotoPrestadorDTO;
 import com.java360.agendei.infrastructure.dto.usuario.RegistroUsuarioDTO;
 import com.java360.agendei.infrastructure.dto.usuario.UsuarioDetalhadoDTO;
 import com.java360.agendei.infrastructure.security.JwtService;
+import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -123,6 +126,26 @@ public class UsuarioService {
         // Converte para DTO
         return usuariosPage.map(UsuarioDetalhadoDTO::fromEntity);
     }
+
+    @Transactional
+    public void alterarPlanoPrestador(Integer id, PlanoPrestador novoPlano) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.ADMIN, PerfilUsuario.PRESTADOR);
+
+        Prestador prestador = (Prestador) usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado."));
+
+        boolean isDono = prestador.getNegocio() != null &&
+                prestador.getNegocio().getCriador().getId().equals(prestador.getId());
+
+        if (!isDono && !PermissaoUtils.isAdmin(usuario)) {
+            throw new SecurityException("Apenas o dono do negócio ou admin pode alterar o plano.");
+        }
+
+        prestador.setPlano(novoPlano);
+        usuarioRepository.save(prestador);
+    }
+
 
 
     @Transactional

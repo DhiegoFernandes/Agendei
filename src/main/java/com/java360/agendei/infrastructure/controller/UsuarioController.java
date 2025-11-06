@@ -2,6 +2,7 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.UsuarioService;
 import com.java360.agendei.domain.entity.Usuario;
+import com.java360.agendei.domain.model.PlanoPrestador;
 import com.java360.agendei.infrastructure.dto.usuario.FotoPrestadorDTO;
 import com.java360.agendei.infrastructure.dto.usuario.RegistroUsuarioDTO;
 import com.java360.agendei.infrastructure.dto.usuario.UsuarioDTO;
@@ -76,9 +77,6 @@ public class UsuarioController {
                 .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
                 .body(imagem);
     }
-
-
-
 
 
 
