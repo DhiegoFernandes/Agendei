@@ -4,8 +4,10 @@ import com.java360.agendei.domain.entity.*;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.model.StatusAgendamento;
 import com.java360.agendei.domain.repository.AgendamentoRepository;
+import com.java360.agendei.domain.repository.ClienteBloqueadoRepository;
 import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.infrastructure.dto.ClienteResumoDTO;
 import com.java360.agendei.infrastructure.dto.CreateAgendamentoDTO;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
@@ -25,6 +27,7 @@ public class AgendamentoService {
     private final ServicoRepository servicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final DisponibilidadeService disponibilidadeService;
+    private final ClienteBloqueadoRepository clienteBloqueadoRepository;
 
     @Transactional
     public Agendamento criarAgendamento(CreateAgendamentoDTO dto) {
@@ -57,6 +60,16 @@ public class AgendamentoService {
 
         Prestador prestador = servico.getPrestador();
         Negocio negocio = prestador.getNegocio();
+
+        // Verifica se o cliente está bloqueado pelo prestador
+        boolean bloqueado = clienteBloqueadoRepository
+                .findByPrestadorIdAndClienteId(prestador.getId(), usuario.getId())
+                .map(ClienteBloqueado::isAtivo)
+                .orElse(false);
+
+        if (bloqueado) {
+            throw new IllegalArgumentException("Você está bloqueado por este prestador e não pode agendar serviços.");
+        }
 
         // Bloqueia agendamento se o negócio estiver inativo
         if (negocio == null || !negocio.isAtivo()) {
@@ -227,6 +240,122 @@ public class AgendamentoService {
 
         agendamento.setStatus(StatusAgendamento.CANCELADO);
     }
+
+    @Transactional
+    public List<ClienteResumoDTO> listarClientesDoPrestador() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR);
+
+        Prestador prestador = (Prestador) usuario;
+
+        // Busca todos os clientes que já fizeram agendamentos com este prestador
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+
+        return agendamentos.stream()
+                .map(Agendamento::getCliente)
+                .distinct()
+                .map(c -> {
+                    boolean bloqueado = clienteBloqueadoRepository
+                            .findByPrestadorIdAndClienteId(prestador.getId(), c.getId())
+                            .map(ClienteBloqueado::isAtivo)
+                            .orElse(false);
+                    return new ClienteResumoDTO(c.getId(), c.getNome(), c.getEmail(), c.getTelefone(), bloqueado);
+                })
+                .toList();
+    }
+
+    @Transactional
+    public List<ClienteResumoDTO> listarClientesBloqueados() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR);
+
+        Prestador prestador = (Prestador) usuario;
+
+        // Busca bloqueios ativos do prestador
+        List<ClienteBloqueado> bloqueios = clienteBloqueadoRepository.findByPrestadorId(prestador.getId())
+                .stream()
+                .filter(ClienteBloqueado::isAtivo)
+                .toList();
+
+        return bloqueios.stream()
+                .map(b -> {
+                    Cliente c = b.getCliente();
+                    return new ClienteResumoDTO(
+                            c.getId(),
+                            c.getNome(),
+                            c.getEmail(),
+                            c.getTelefone(),
+                            true
+                    );
+                })
+                .toList();
+    }
+
+    @Transactional
+    public void bloquearCliente(Integer clienteId) {
+        Usuario atual = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(atual, PerfilUsuario.PRESTADOR);
+
+        Prestador prestador = (Prestador) atual;
+
+        // Busca o usuário alvo e valida que é CLIENTE
+        Usuario u = usuarioRepository.findById(clienteId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        if (!(u instanceof Cliente cliente)) {
+            throw new IllegalArgumentException("Somente usuários com perfil CLIENTE podem ser bloqueados.");
+        }
+
+        // Evita bloquear a si mesmo por engano
+        if (u.getId().equals(prestador.getId())) {
+            throw new IllegalArgumentException("Você não pode se bloquear.");
+        }
+
+        // Cria ou reativa o bloqueio
+        ClienteBloqueado bloqueio = clienteBloqueadoRepository
+                .findByPrestadorIdAndClienteId(prestador.getId(), cliente.getId())
+                .orElse(ClienteBloqueado.builder()
+                        .prestador(prestador)
+                        .cliente(cliente)
+                        .build());
+
+        bloqueio.setAtivo(true);
+        clienteBloqueadoRepository.save(bloqueio);
+
+        // Cancela todos os agendamentos pendentes do cliente com este prestador
+        List<Agendamento> pendentes = agendamentoRepository.findByPrestadorId(prestador.getId())
+                .stream()
+                .filter(a -> a.getCliente().getId().equals(cliente.getId()))
+                .filter(a -> a.getStatus() == StatusAgendamento.PENDENTE)
+                .toList();
+
+        pendentes.forEach(a -> a.setStatus(StatusAgendamento.CANCELADO));
+    }
+
+
+
+    @Transactional
+    public void desbloquearCliente(Integer clienteId) {
+        Usuario atual = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(atual, PerfilUsuario.PRESTADOR);
+
+        Prestador prestador = (Prestador) atual;
+
+        Usuario u = usuarioRepository.findById(clienteId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        if (!(u instanceof Cliente)) {
+            throw new IllegalArgumentException("Somente usuários com perfil CLIENTE podem ser desbloqueados.");
+        }
+
+        ClienteBloqueado bloqueio = clienteBloqueadoRepository
+                .findByPrestadorIdAndClienteId(prestador.getId(), clienteId)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não está bloqueado."));
+
+        bloqueio.setAtivo(false);
+        clienteBloqueadoRepository.save(bloqueio);
+    }
+
+
 
     @Scheduled(fixedRate = 300000) // a cada 5 minutos verifica se agendamento passou o horário
     @Transactional

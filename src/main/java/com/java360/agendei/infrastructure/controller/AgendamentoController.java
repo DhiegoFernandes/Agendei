@@ -3,6 +3,7 @@ package com.java360.agendei.infrastructure.controller;
 import com.java360.agendei.domain.applicationservice.AgendamentoService;
 import com.java360.agendei.domain.entity.Agendamento;
 import com.java360.agendei.infrastructure.dto.AgendamentoDTO;
+import com.java360.agendei.infrastructure.dto.ClienteResumoDTO;
 import com.java360.agendei.infrastructure.dto.CreateAgendamentoDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,32 @@ public class AgendamentoController {
                 .map(AgendamentoDTO::fromEntity)
                 .toList();
         return ResponseEntity.ok(lista);
+    }
+
+    // Lista todos os clientes do prestador
+    @GetMapping("/clientes")
+    public ResponseEntity<List<ClienteResumoDTO>> listarClientesDoPrestador() {
+        return ResponseEntity.ok(agendamentoService.listarClientesDoPrestador());
+    }
+
+    // Lista todos os clientes bloqueados do prestador
+    @GetMapping("/clientes/bloqueados")
+    public ResponseEntity<List<ClienteResumoDTO>> listarClientesBloqueados() {
+        return ResponseEntity.ok(agendamentoService.listarClientesBloqueados());
+    }
+
+    //Bloqueia cliente
+    @PutMapping("/clientes/{clienteId}/bloquear")
+    public ResponseEntity<String> bloquearCliente(@PathVariable Integer clienteId) {
+        agendamentoService.bloquearCliente(clienteId);
+        return ResponseEntity.ok("Cliente bloqueado com sucesso.");
+    }
+
+    //Desbloqueia cliente
+    @PutMapping("/clientes/{clienteId}/desbloquear")
+    public ResponseEntity<String> desbloquearCliente(@PathVariable Integer clienteId) {
+        agendamentoService.desbloquearCliente(clienteId);
+        return ResponseEntity.ok("Cliente desbloqueado com sucesso.");
     }
 
 }
