@@ -1,7 +1,6 @@
 package com.java360.agendei.infrastructure.dto;
 
 import com.java360.agendei.domain.entity.Servico;
-import com.java360.agendei.domain.model.CategoriaServico;
 import lombok.Data;
 
 import java.util.Base64;

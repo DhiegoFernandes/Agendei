@@ -1,7 +1,6 @@
 package com.java360.agendei.domain.repository;
 
 import com.java360.agendei.domain.entity.Servico;
-import com.java360.agendei.domain.model.CategoriaServico;
 import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

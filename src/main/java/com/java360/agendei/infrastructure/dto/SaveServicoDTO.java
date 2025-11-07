@@ -1,6 +1,5 @@
 package com.java360.agendei.infrastructure.dto;
 
-import com.java360.agendei.domain.model.CategoriaServico;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 

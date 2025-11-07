@@ -2,7 +2,6 @@ package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.ServicoService;
 import com.java360.agendei.domain.entity.Servico;
-import com.java360.agendei.domain.model.CategoriaServico;
 import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import com.java360.agendei.infrastructure.dto.HorariosDisponiveisDTO;
 import com.java360.agendei.infrastructure.dto.SaveServicoDTO;

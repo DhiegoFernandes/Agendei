@@ -1,7 +1,6 @@
 package com.java360.agendei.domain.applicationservice;
 
 import com.java360.agendei.domain.entity.*;
-import com.java360.agendei.domain.model.CategoriaServico;
 import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.model.StatusAgendamento;

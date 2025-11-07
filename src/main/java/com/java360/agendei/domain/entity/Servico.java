@@ -1,7 +1,6 @@
 package com.java360.agendei.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.java360.agendei.domain.model.CategoriaServico;
 import jakarta.persistence.*;
 import lombok.*;
 
