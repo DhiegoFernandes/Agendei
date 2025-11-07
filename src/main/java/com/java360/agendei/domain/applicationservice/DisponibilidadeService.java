@@ -8,6 +8,7 @@ import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.DisponibilidadeDTO;
+import com.java360.agendei.infrastructure.dto.HorarioAlmocoDTO;
 import com.java360.agendei.infrastructure.dto.SaveDisponibilidadeDTO;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
@@ -108,6 +109,40 @@ public class DisponibilidadeService {
 
         disponibilidade.setAtivo(ativo);
         return disponibilidade;
+    }
+
+    @Transactional
+    public void definirHorarioAlmoco(LocalTime horaInicio) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR);
+
+        Prestador prestador = (Prestador) usuario;
+
+        if (horaInicio.isBefore(LocalTime.of(5, 0)) || horaInicio.isAfter(LocalTime.of(20, 0))) {
+            throw new IllegalArgumentException("Horário de almoço deve estar entre 05:00 e 20:00.");
+        }
+
+        prestador.setHoraInicioAlmoco(horaInicio);
+        prestador.setHoraFimAlmoco(horaInicio.plusHours(1));
+
+        usuarioRepository.save(prestador);
+    }
+
+    @Transactional
+    public HorarioAlmocoDTO buscarHorarioAlmoco() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR);
+
+        Prestador prestador = (Prestador) usuario;
+
+        LocalTime inicio = prestador.getHoraInicioAlmoco();
+        LocalTime fim = prestador.getHoraFimAlmoco();
+
+        if (inicio == null || fim == null) {
+            throw new IllegalArgumentException("Horário de almoço ainda não foi definido.");
+        }
+
+        return new HorarioAlmocoDTO(inicio, fim);
     }
 
 

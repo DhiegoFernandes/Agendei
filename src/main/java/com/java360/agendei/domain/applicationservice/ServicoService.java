@@ -108,6 +108,10 @@ public class ServicoService {
         LocalTime hora = disponibilidade.getHoraInicio();
         LocalTime limite = disponibilidade.getHoraFim().minusMinutes(duracao);
 
+        // Recupera horário de almoço do prestador (caso exista)
+        LocalTime almocoInicio = prestador.getHoraInicioAlmoco();
+        LocalTime almocoFim = prestador.getHoraFimAlmoco();
+
         // Se a data for anterior à atual, retorna lista vazia
         if (dataSelecionada.isBefore(LocalDate.now())) {
             return new HorariosDisponiveisDTO(servicoId, List.of());
@@ -123,6 +127,13 @@ public class ServicoService {
                 continue;
             }
 
+            // Ignora horários que caem dentro do horário de almoço
+            if (almocoInicio != null && almocoFim != null &&
+                    overlaps(inicio, fim, almocoInicio, almocoFim)) {
+                hora = hora.plusMinutes(duracao);
+                continue;
+            }
+
             // Verifica conflitos com agendamentos pendentes
             boolean conflita = agendamentos.stream().anyMatch(ag ->
                     overlaps(inicio, fim,
@@ -130,6 +141,7 @@ public class ServicoService {
                             ag.getDataHora().toLocalTime().plusMinutes(ag.getServico().getDuracaoMinutos()))
             );
 
+            // Se não conflitar com nada, adiciona à lista de horários disponíveis
             if (!conflita) {
                 horariosDisponiveis.add(inicio.toString());
             }

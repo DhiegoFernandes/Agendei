@@ -16,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -80,12 +82,29 @@ public class AgendamentoService {
         LocalDateTime inicio = dto.getDataHora();
         LocalDateTime fim = inicio.plusMinutes(duracao);
 
-        // Verifica disponibilidade do prestador
+        // impede agendamentos no horário de almoço
+        LocalTime almocoInicio = prestador.getHoraInicioAlmoco();
+        LocalTime almocoFim = prestador.getHoraFimAlmoco();
+
+        if (almocoInicio != null && almocoFim != null) {
+            LocalDate data = inicio.toLocalDate();
+            LocalDateTime almocoInicioDT = LocalDateTime.of(data, almocoInicio);
+            LocalDateTime almocoFimDT = LocalDateTime.of(data, almocoFim);
+
+            // Usa o mesmo overlaps que já existe (com LocalDateTime)
+            boolean dentroDoAlmoco = overlaps(inicio, fim, almocoInicioDT, almocoFimDT);
+            if (dentroDoAlmoco) {
+                throw new IllegalArgumentException("Não é possível agendar durante o horário de almoço do prestador.");
+            }
+        }
+
+
+        // Verifica disponibilidade do prestador (dia e hora)
         if (!disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), inicio, duracao)) {
             throw new IllegalArgumentException("O prestador não está disponível nesse horário.");
         }
 
-        // Verifica sobreposição de horários
+        // Verifica sobreposição de horários com outros agendamentos pendentes
         List<Agendamento> agendamentosExistentes = agendamentoRepository.findByPrestadorId(prestador.getId());
         boolean conflita = agendamentosExistentes.stream()
                 .filter(ag -> ag.getStatus() == StatusAgendamento.PENDENTE) // ignora cancelados e concluídos
@@ -110,6 +129,7 @@ public class AgendamentoService {
 
         return agendamentoRepository.save(agendamento);
     }
+
 
     @Transactional
     public Agendamento atualizarAgendamento(Integer id, CreateAgendamentoDTO dto) {

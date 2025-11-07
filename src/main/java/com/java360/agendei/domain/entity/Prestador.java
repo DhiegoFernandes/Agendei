@@ -5,6 +5,8 @@ import com.java360.agendei.domain.model.PlanoPrestador;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalTime;
+
 @Entity
 @Table(name = "prestadores")
 @Data
@@ -24,4 +26,10 @@ public class Prestador extends Usuario {
     @Enumerated(EnumType.STRING)
     @Column(name = "plano", nullable = false)
     private PlanoPrestador plano = PlanoPrestador.BASICO; // Por padrão o prestador é criado com o plano basico
+
+    @Column(name = "hora_inicio_almoco")
+    private LocalTime horaInicioAlmoco;
+
+    @Column(name = "hora_fim_almoco")
+    private LocalTime horaFimAlmoco;
 }
