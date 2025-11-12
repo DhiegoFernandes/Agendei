@@ -72,6 +72,14 @@ public class NegocioController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/avaliacao")
+    public ResponseEntity<List<NegocioBuscaDTO>> buscarPorAvaliacao(
+            @RequestParam(required = false) Double notaMinima
+    ) {
+        return ResponseEntity.ok(negocioService.buscarNegociosPorAvaliacao(notaMinima));
+    }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<NegocioDTO> buscarPorId(@PathVariable Integer id) {
         NegocioDTO negocio = negocioService.buscarNegocioPorId(id);

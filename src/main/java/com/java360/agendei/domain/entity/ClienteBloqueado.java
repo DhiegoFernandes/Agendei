@@ -27,6 +27,7 @@ public class ClienteBloqueado {
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean ativo = true;
 }
