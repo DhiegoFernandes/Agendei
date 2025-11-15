@@ -75,12 +75,21 @@ public class UsuarioController {
                 .body(imagem);
     }
 
+
+    // Atualiza prestador
     @PutMapping("/me/atualizar")
     public ResponseEntity<UsuarioDetalhadoDTO> atualizarDadosPrestador(
             @RequestBody @Valid AtualizarPrestadorDTO dto) {
         UsuarioDetalhadoDTO atualizado = usuarioService.atualizarDadosPrestador(dto);
         return ResponseEntity.ok(atualizado);
     }
+
+    // Atualiza cliente
+    @PatchMapping("/cliente")
+    public ResponseEntity<UsuarioDetalhadoDTO> atualizarCliente(@RequestBody @Valid AtualizarClienteDTO dto) {
+        return ResponseEntity.ok(usuarioService.atualizarDadosCliente(dto));
+    }
+
 
 
 

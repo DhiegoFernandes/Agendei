@@ -7,10 +7,7 @@ import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.model.PlanoPrestador;
 import com.java360.agendei.domain.repository.UsuarioRepository;
-import com.java360.agendei.infrastructure.dto.usuario.AtualizarPrestadorDTO;
-import com.java360.agendei.infrastructure.dto.usuario.FotoPrestadorDTO;
-import com.java360.agendei.infrastructure.dto.usuario.RegistroUsuarioDTO;
-import com.java360.agendei.infrastructure.dto.usuario.UsuarioDetalhadoDTO;
+import com.java360.agendei.infrastructure.dto.usuario.*;
 import com.java360.agendei.infrastructure.security.JwtService;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
@@ -190,6 +187,39 @@ public class UsuarioService {
 
         return usuariosPage.map(UsuarioDetalhadoDTO::fromEntity);
     }
+
+    @Transactional
+    public UsuarioDetalhadoDTO atualizarDadosCliente(AtualizarClienteDTO dto) {
+        Usuario usuario = UsuarioAutenticado.get();
+
+        // Apenas CLIENTE pode atualizar esses dados
+        if (!(usuario instanceof Cliente cliente)) {
+            throw new SecurityException("Apenas clientes podem atualizar seus dados pessoais.");
+        }
+
+        String emailNormalizado = dto.getEmail().toLowerCase().trim();
+
+        // Verifica se o novo e-mail já pertence a outra pessoa
+        usuarioRepository.findByEmail(emailNormalizado).ifPresent(u -> {
+            if (!u.getId().equals(cliente.getId())) {
+                throw new IllegalArgumentException("E-mail já está em uso por outro usuário.");
+            }
+        });
+
+        // Atualiza os dados permitidos
+        cliente.setNome(dto.getNome());
+        cliente.setTelefone(dto.getTelefone());
+        cliente.setEmail(emailNormalizado);
+
+        cliente.setCep(dto.getCep());
+        cliente.setEndereco(dto.getEndereco());
+        cliente.setNumero(dto.getNumero());
+
+        usuarioRepository.save(cliente);
+
+        return UsuarioDetalhadoDTO.fromEntity(cliente);
+    }
+
 
     @Transactional
     public UsuarioDetalhadoDTO atualizarDadosPrestador(AtualizarPrestadorDTO dto) {

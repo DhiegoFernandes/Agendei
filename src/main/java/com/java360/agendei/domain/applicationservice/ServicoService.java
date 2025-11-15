@@ -60,12 +60,15 @@ public class ServicoService {
             throw new IllegalArgumentException("Já existe um serviço com esse título neste negócio.");
         }
 
+        // Caso 'ativo' venha nulo, assume como true (por compatibilidade)
+        boolean ativo = dto.getAtivo() != null ? dto.getAtivo() : true;
+
         Servico servico = Servico.builder()
                 .titulo(dto.getTitulo())
                 .descricao(dto.getDescricao())
                 .valor(dto.getValor())
                 .duracaoMinutos(dto.getDuracaoMinutos())
-                .ativo(true)
+                .ativo(ativo)
                 .prestador(prestador)
                 .negocio(negocio)
                 .build();
