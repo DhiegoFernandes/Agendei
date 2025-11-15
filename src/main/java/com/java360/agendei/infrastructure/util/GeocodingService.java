@@ -23,9 +23,12 @@ public class GeocodingService {
                 double lng = results[0].geometry.location.lng;
                 return new LatLngDTO(lat, lng);
             }
-            throw new IllegalArgumentException("Não foi possível encontrar coordenadas para o CEP: " + cep);
+            System.out.println("Não foi possível encontrar coordenadas para o CEP: " + cep);
+            return null; // CEP nao encontrado
+
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao consultar Geocoding API: " + e.getMessage(), e);
+            System.out.println("Erro ao consultar Geocoding API: " + e.getMessage());
+            return null; // Não lança erro, indica CEP inválido
         }
     }
 }

@@ -26,7 +26,7 @@ public class RegistroUsuarioDTO {
     @NotNull(message = "O perfil é obrigatório.")
     private PerfilUsuario perfil;
 
-    @Size(max = 9, message = "CEP deve ter no máximo 9 caracteres.")
+    @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "CEP inválido. Use o formato 00000000 ou 00000-000.")
     private String cep;
 
     private String endereco;

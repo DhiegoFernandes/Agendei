@@ -2,6 +2,7 @@ package com.java360.agendei.infrastructure.dto.negocio;
 
 import com.java360.agendei.domain.model.CategoriaNegocio;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -17,7 +18,7 @@ public class UpdateNegocioDTO {
     @Size(max = 10, message = "Número deve ter no máximo 10 caracteres.")
     private String numero;
 
-    @Size(max = 9, message = "CEP deve ter no máximo 9 caracteres.")
+    @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "CEP inválido. Use o formato 00000000 ou 00000-000.")
     private String cep;
 
     private CategoriaNegocio categoria;

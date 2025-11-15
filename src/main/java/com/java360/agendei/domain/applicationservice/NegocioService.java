@@ -227,9 +227,9 @@ public class NegocioService {
         }
     }
 
-    // Todo ADD LIMITE 20KM
     @Transactional
     public List<NegocioBuscaDTO> buscarNegociosProximos(String nome, CategoriaNegocio categoria) {
+
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
 
@@ -244,12 +244,18 @@ public class NegocioService {
         LatLngDTO clienteLatLng = geocodingService.buscarLatLongPorCep(cliente.getCep());
 
         List<Negocio> negocios = negocioRepository.findByAtivoTrue().stream()
-                .filter(n -> (nome == null || n.getNome().toLowerCase().contains(nome.toLowerCase())))
-                .filter(n -> (categoria == null || n.getCategoria() == categoria))
+                .filter(n -> nome == null || n.getNome().toLowerCase().contains(nome.toLowerCase()))
+                .filter(n -> categoria == null || n.getCategoria() == categoria)
                 .filter(n -> n.getCep() != null && !n.getCep().isBlank())
                 .toList();
 
-        // Mapeia para DTO com distância calculada e filtra até 20km
+        // Se não encontrar coordenadas → retorna tudo sem distância
+        if (clienteLatLng == null) {
+            return negocios.stream()
+                    .map(n -> NegocioBuscaDTO.fromEntity(n, 0.0)) // distância ignorada
+                    .toList();
+        }
+
         return negocios.stream()
                 .map(n -> {
                     try {
@@ -263,14 +269,16 @@ public class NegocioService {
                         return null;
                     }
                 })
-                .filter(dto -> dto != null && dto.getDistanciaKm() <= 20.0) // limite de 20 km
-                .sorted((a, b) -> Double.compare(a.getDistanciaKm(), b.getDistanciaKm())) // mais próximos primeiro
+                .filter(dto -> dto != null && dto.getDistanciaKm() <= 20.0)
+                .sorted((a, b) -> Double.compare(a.getDistanciaKm(), b.getDistanciaKm()))
                 .toList();
     }
 
 
+
     @Transactional
     public List<NegocioBuscaDTO> buscarNegociosPorAvaliacao(Double notaMinima) {
+
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.CLIENTE);
 
@@ -284,18 +292,24 @@ public class NegocioService {
 
         LatLngDTO clienteLatLng = geocodingService.buscarLatLongPorCep(cliente.getCep());
 
-        // Define notaMinima padrão como 0.0 se não for informada
+        // Corrigido: declara notaMin
         double notaMin = (notaMinima != null) ? notaMinima : 0.0;
 
         List<Negocio> negocios = negocioRepository.findByAtivoTrue().stream()
                 .filter(n -> {
-                    double nota = (n.getNotaMedia() != null) ? n.getNotaMedia() : 0.0;
+                    double nota = n.getNotaMedia() != null ? n.getNotaMedia() : 0.0;
                     return nota >= notaMin;
                 })
                 .filter(n -> n.getCep() != null && !n.getCep().isBlank())
                 .toList();
 
-        // Calcula distância e aplica filtro de até 20 km
+        // Se o CEP do cliente for inválido → retorna tudo ignorando distância
+        if (clienteLatLng == null) {
+            return negocios.stream()
+                    .map(n -> NegocioBuscaDTO.fromEntity(n, 0.0))
+                    .toList();
+        }
+
         return negocios.stream()
                 .map(n -> {
                     try {
@@ -313,9 +327,10 @@ public class NegocioService {
                 .sorted((a, b) -> Double.compare(
                         b.getNotaMedia() != null ? b.getNotaMedia() : 0.0,
                         a.getNotaMedia() != null ? a.getNotaMedia() : 0.0
-                )) // ordena do mais bem avaliado para o pior
+                ))
                 .toList();
     }
+
 
 
 
