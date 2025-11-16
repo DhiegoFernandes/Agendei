@@ -14,4 +14,7 @@ public interface NegocioRepository extends JpaRepository<Negocio, Integer> {
     List<Negocio> findByAtivoTrue();
 
     Optional<Negocio> findByNomeAndAtivoTrue(String nome);
+
+    long countByAtivoTrue();
+
 }

@@ -1,6 +1,7 @@
 package com.java360.agendei.infrastructure.controller;
 
 import com.java360.agendei.domain.applicationservice.RelatorioService;
+import com.java360.agendei.infrastructure.dto.admin.ResumoAdministrativoDTO;
 import com.java360.agendei.infrastructure.dto.relatorios.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -55,6 +56,13 @@ public class RelatorioController {
         RelatorioNegocioDTO relatorio = relatorioService.relatorioNegocio(id, yearMonth);
         return ResponseEntity.ok(relatorio);
     }
+
+    //Resumo admin
+    @GetMapping("/admin/resumo")
+    public ResponseEntity<ResumoAdministrativoDTO> resumoAdministrativo() {
+        return ResponseEntity.ok(relatorioService.resumoAdministrativo());
+    }
+
 
 
 }

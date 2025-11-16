@@ -6,9 +6,8 @@ import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.model.StatusAgendamento;
-import com.java360.agendei.domain.repository.AgendamentoRepository;
-import com.java360.agendei.domain.repository.NegocioRepository;
-import com.java360.agendei.domain.repository.PrestadorRepository;
+import com.java360.agendei.domain.repository.*;
+import com.java360.agendei.infrastructure.dto.admin.ResumoAdministrativoDTO;
 import com.java360.agendei.infrastructure.dto.relatorios.*;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
@@ -30,6 +29,8 @@ public class RelatorioService {
     private final AgendamentoRepository agendamentoRepository;
     private final NegocioRepository negocioRepository;
     private final PrestadorRepository prestadorRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ServicoRepository servicoRepository;
 
 
     private Integer getPrestadorIdFromToken() {
@@ -213,6 +214,27 @@ public class RelatorioService {
         );
     }
 
+    @Transactional
+    public ResumoAdministrativoDTO resumoAdministrativo() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.ADMIN);
+
+        long totalPrestadores = usuarioRepository.countByPerfil(PerfilUsuario.PRESTADOR);
+        long totalClientes = usuarioRepository.countByPerfil(PerfilUsuario.CLIENTE);
+
+        long totalServicosAtivos = servicoRepository.countByAtivoTrue();
+        long totalNegociosAtivos = negocioRepository.countByAtivoTrue();
+
+        long totalAgendamentos = agendamentoRepository.count();
+
+        return new ResumoAdministrativoDTO(
+                totalPrestadores,
+                totalClientes,
+                totalServicosAtivos,
+                totalNegociosAtivos,
+                totalAgendamentos
+        );
+    }
 
 
 }

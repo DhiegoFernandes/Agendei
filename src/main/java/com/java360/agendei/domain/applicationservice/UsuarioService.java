@@ -7,6 +7,7 @@ import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.PerfilUsuario;
 import com.java360.agendei.domain.model.PlanoPrestador;
 import com.java360.agendei.domain.repository.UsuarioRepository;
+import com.java360.agendei.infrastructure.dto.admin.AtualizarUsuarioAdminDTO;
 import com.java360.agendei.infrastructure.dto.usuario.*;
 import com.java360.agendei.infrastructure.security.JwtService;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
@@ -307,6 +308,42 @@ public class UsuarioService {
         return prestador.getFotoPerfil();
     }
 
+    @Transactional
+    public UsuarioDetalhadoDTO atualizarUsuarioComoAdmin(Integer id, AtualizarUsuarioAdminDTO dto) {
+        Usuario admin = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(admin, PerfilUsuario.ADMIN);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        String emailNormalizado = dto.getEmail().toLowerCase().trim();
+
+        // valida duplicidade de email
+        usuarioRepository.findByEmail(emailNormalizado).ifPresent(u -> {
+            if (!u.getId().equals(usuario.getId())) {
+                throw new IllegalArgumentException("E-mail já está em uso por outro usuário.");
+            }
+        });
+
+        // dados comuns
+        usuario.setNome(dto.getNome());
+        usuario.setTelefone(dto.getTelefone());
+        usuario.setEmail(emailNormalizado);
+
+        if (dto.getAtivo() != null)
+            usuario.setAtivo(dto.getAtivo());
+
+        // se é CLIENTE → libera CEP e endereço
+        if (usuario instanceof Cliente cliente) {
+            if (dto.getCep() != null) cliente.setCep(dto.getCep());
+            if (dto.getEndereco() != null) cliente.setEndereco(dto.getEndereco());
+            if (dto.getNumero() != null) cliente.setNumero(dto.getNumero());
+        }
+
+        usuarioRepository.save(usuario);
+
+        return UsuarioDetalhadoDTO.fromEntity(usuario);
+    }
 
 
 

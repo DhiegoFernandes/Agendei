@@ -45,5 +45,8 @@ public interface ServicoRepository extends JpaRepository<Servico, Integer> {
             @Param("diaSemana") DiaSemanaDisponivel diaSemana
     );
 
+    long countByAtivoTrue();
+
+
 
 }

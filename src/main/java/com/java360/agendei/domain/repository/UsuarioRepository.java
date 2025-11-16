@@ -31,4 +31,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
             @Param("telefone") String telefone,
             Pageable pageable
     );
+
+    long countByPerfil(PerfilUsuario perfil);
+
 }

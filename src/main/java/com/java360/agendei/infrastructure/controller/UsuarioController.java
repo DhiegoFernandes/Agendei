@@ -3,6 +3,7 @@ package com.java360.agendei.infrastructure.controller;
 import com.java360.agendei.domain.applicationservice.UsuarioService;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.PlanoPrestador;
+import com.java360.agendei.infrastructure.dto.admin.AtualizarUsuarioAdminDTO;
 import com.java360.agendei.infrastructure.dto.usuario.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +90,15 @@ public class UsuarioController {
     public ResponseEntity<UsuarioDetalhadoDTO> atualizarCliente(@RequestBody @Valid AtualizarClienteDTO dto) {
         return ResponseEntity.ok(usuarioService.atualizarDadosCliente(dto));
     }
+
+    @PutMapping("/admin/{id}")
+    public ResponseEntity<UsuarioDetalhadoDTO> atualizarComoAdmin(
+            @PathVariable Integer id,
+            @RequestBody AtualizarUsuarioAdminDTO dto
+    ) {
+        return ResponseEntity.ok(usuarioService.atualizarUsuarioComoAdmin(id, dto));
+    }
+
 
 
 
