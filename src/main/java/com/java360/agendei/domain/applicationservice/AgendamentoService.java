@@ -9,6 +9,7 @@ import com.java360.agendei.domain.repository.ServicoRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.ClienteResumoDTO;
 import com.java360.agendei.infrastructure.dto.CreateAgendamentoDTO;
+import com.java360.agendei.infrastructure.email.EmailService;
 import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
@@ -30,6 +31,7 @@ public class AgendamentoService {
     private final UsuarioRepository usuarioRepository;
     private final DisponibilidadeService disponibilidadeService;
     private final ClienteBloqueadoRepository clienteBloqueadoRepository;
+    private final EmailService emailService;
 
     @Transactional
     public Agendamento criarAgendamento(CreateAgendamentoDTO dto) {
@@ -126,6 +128,9 @@ public class AgendamentoService {
                 .dataHora(inicio)
                 .status(StatusAgendamento.PENDENTE)
                 .build();
+
+        // Enviar email de confirmação
+        emailService.enviarConfirmacaoAgendamento(agendamento);
 
         return agendamentoRepository.save(agendamento);
     }
