@@ -14,6 +14,7 @@ import com.java360.agendei.infrastructure.security.PermissaoUtils;
 import com.java360.agendei.infrastructure.security.UsuarioAutenticado;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -129,11 +130,26 @@ public class AgendamentoService {
                 .status(StatusAgendamento.PENDENTE)
                 .build();
 
-        // Enviar email de confirmação
-        emailService.enviarConfirmacaoAgendamento(agendamento);
+        // Salva o agendamento
+        Agendamento salvo = agendamentoRepository.save(agendamento);
 
-        return agendamentoRepository.save(agendamento);
+        // Envia email assincrono (não trava o fluxo)
+        enviarEmailConfirmacaoAsync(salvo);
+
+        //Retorna agendamento salvo
+        return salvo;
     }
+
+    @Async
+    public void enviarEmailConfirmacaoAsync(Agendamento agendamento) {
+        try {
+            emailService.enviarConfirmacaoAgendamento(agendamento);
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar e-mail: " + e.getMessage());
+        }
+    }
+
+
 
 
     @Transactional
