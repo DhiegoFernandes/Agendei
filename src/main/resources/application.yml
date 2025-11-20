@@ -22,6 +22,10 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+  maps:
+    key: AIzaSyDQHCfEBOf_EO6Abo4Q-n987llQhru87Rw
+  jwt:
+    SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
 
 
   # --- ATIVAÇÃO DO PERFIL PADRÃO ---

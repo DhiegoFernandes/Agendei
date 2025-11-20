@@ -5,14 +5,16 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.security.Key;
 import java.util.Date;
 
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "chave-super-secreta-de-256-bits-jwt-agendei"; // >= 256 bits
+    @Value("${spring.maps.key}")
+    private String SECRET_KEY;
+
     private final long EXPIRATION_TIME = 1000 * 60 * 60 * 8; // 8h
 
     private Key getSigningKey() {
