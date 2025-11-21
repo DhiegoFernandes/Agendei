@@ -33,7 +33,7 @@ spring:
     SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
 
   profiles:
-    active: dev   # << DEV SEMPRE | PROD SÓ É USADO NA NUVEM
+    active: localmysql   # dev | localmysql
 
 
 ---
@@ -73,6 +73,33 @@ spring:
     url: jdbc:mysql://10.0.2.21:3306/agendei?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: agendei_root
     password: Agendei@123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  h2:
+    console:
+      enabled: false
+
+
+---
+# ===================================================================
+# PERFIL LOCALMYSQL — MYSQL LOCALHOST
+# ===================================================================
+spring:
+  config:
+    activate:
+      on-profile: localmysql
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/agendei?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
