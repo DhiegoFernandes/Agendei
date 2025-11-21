@@ -36,4 +36,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Intege
 
     long countByClienteIdAndStatus(Integer clienteId, StatusAgendamento status);
 
+    List<Agendamento> findByPrestador_Negocio_Id(Integer negocioId);
+
+
 }

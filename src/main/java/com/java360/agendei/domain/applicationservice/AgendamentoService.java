@@ -47,39 +47,32 @@ public class AgendamentoService {
             throw new IllegalArgumentException("Você já possui o limite máximo de 4 agendamentos ativos.");
         }
 
-        if (dto.getServicoId() == null) {
+        if (dto.getServicoId() == null)
             throw new IllegalArgumentException("O ID do serviço é obrigatório ao criar um agendamento.");
-        }
 
-        if (!dto.getDataHora().isAfter(LocalDateTime.now())) {
+        if (!dto.getDataHora().isAfter(LocalDateTime.now()))
             throw new IllegalArgumentException("Não é possível criar um agendamento no passado.");
-        }
 
         Servico servico = servicoRepository.findById(dto.getServicoId())
                 .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado."));
 
-        // Bloqueia agendamento em serviço inativo
-        if (!servico.isAtivo()) {
+        if (!servico.isAtivo())
             throw new IllegalArgumentException("Não é possível agendar um serviço inativo.");
-        }
 
         Prestador prestador = servico.getPrestador();
         Negocio negocio = prestador.getNegocio();
 
-        // Verifica se o cliente está bloqueado pelo prestador
+        if (negocio == null || !negocio.isAtivo())
+            throw new IllegalArgumentException("Não é possível agendar um serviço de um negócio inativo.");
+
+        // BLOQUEIO POR NEGÓCIO
         boolean bloqueado = clienteBloqueadoRepository
-                .findByPrestadorIdAndClienteId(prestador.getId(), usuario.getId())
+                .findByNegocioIdAndClienteId(negocio.getId(), usuario.getId())
                 .map(ClienteBloqueado::isAtivo)
                 .orElse(false);
 
-        if (bloqueado) {
-            throw new IllegalArgumentException("Você está bloqueado por este prestador e não pode agendar serviços.");
-        }
-
-        // Bloqueia agendamento se o negócio estiver inativo
-        if (negocio == null || !negocio.isAtivo()) {
-            throw new IllegalArgumentException("Não é possível agendar um serviço de um negócio inativo.");
-        }
+        if (bloqueado)
+            throw new IllegalArgumentException("Você está bloqueado por este negócio e não pode agendar serviços.");
 
         int duracao = servico.getDuracaoMinutos();
         LocalDateTime inicio = dto.getDataHora();
@@ -94,23 +87,18 @@ public class AgendamentoService {
             LocalDateTime almocoInicioDT = LocalDateTime.of(data, almocoInicio);
             LocalDateTime almocoFimDT = LocalDateTime.of(data, almocoFim);
 
-            // Usa o mesmo overlaps que já existe (com LocalDateTime)
-            boolean dentroDoAlmoco = overlaps(inicio, fim, almocoInicioDT, almocoFimDT);
-            if (dentroDoAlmoco) {
+            if (overlaps(inicio, fim, almocoInicioDT, almocoFimDT))
                 throw new IllegalArgumentException("Não é possível agendar durante o horário de almoço do prestador.");
-            }
         }
 
-
-        // Verifica disponibilidade do prestador (dia e hora)
-        if (!disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), inicio, duracao)) {
+        if (!disponibilidadeService.prestadorEstaDisponivel(prestador.getId(), inicio, duracao))
             throw new IllegalArgumentException("O prestador não está disponível nesse horário.");
-        }
 
         // Verifica sobreposição de horários com outros agendamentos pendentes
         List<Agendamento> agendamentosExistentes = agendamentoRepository.findByPrestadorId(prestador.getId());
+
         boolean conflita = agendamentosExistentes.stream()
-                .filter(ag -> ag.getStatus() == StatusAgendamento.PENDENTE) // ignora cancelados e concluídos
+                .filter(ag -> ag.getStatus() == StatusAgendamento.PENDENTE)
                 .anyMatch(ag -> overlaps(
                         inicio, fim,
                         ag.getDataHora(),
@@ -288,13 +276,21 @@ public class AgendamentoService {
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR);
 
         Prestador prestador = (Prestador) usuario;
+        Negocio negocio = prestador.getNegocio();
 
-        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+        if (negocio == null) {
+            throw new IllegalArgumentException("Prestador não pertence a um negócio.");
+        }
+
+        // Agendamentos de TODOS os prestadores do mesmo negócio
+        List<Agendamento> agendamentos = agendamentoRepository
+                .findByPrestador_Negocio_Id(negocio.getId());
 
         return agendamentos.stream()
                 .map(Agendamento::getCliente)
                 .distinct()
                 .map(c -> {
+
                     long total = agendamentos.stream()
                             .filter(a -> a.getCliente().getId().equals(c.getId()))
                             .count();
@@ -307,7 +303,7 @@ public class AgendamentoService {
                     double taxa = (total > 0) ? ((double) cancelados / total) * 100 : 0.0;
 
                     boolean bloqueado = clienteBloqueadoRepository
-                            .findByPrestadorIdAndClienteId(prestador.getId(), c.getId())
+                            .findByNegocioIdAndClienteId(negocio.getId(), c.getId())
                             .map(ClienteBloqueado::isAtivo)
                             .orElse(false);
 
@@ -325,26 +321,33 @@ public class AgendamentoService {
 
 
 
+
     @Transactional
     public List<ClienteResumoDTO> listarClientesBloqueados() {
         Usuario usuario = UsuarioAutenticado.get();
         PermissaoUtils.validarPermissao(usuario, PerfilUsuario.PRESTADOR);
 
         Prestador prestador = (Prestador) usuario;
+        Negocio negocio = prestador.getNegocio();
 
-        // Busca bloqueios ativos do prestador
-        List<ClienteBloqueado> bloqueios = clienteBloqueadoRepository.findByPrestadorId(prestador.getId())
+        if (negocio == null) {
+            throw new IllegalArgumentException("Prestador não pertence a um negócio.");
+        }
+
+        List<ClienteBloqueado> bloqueios = clienteBloqueadoRepository
+                .findByNegocioId(negocio.getId())
                 .stream()
                 .filter(ClienteBloqueado::isAtivo)
                 .toList();
 
-        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+        // Busca agendamentos do negócio inteiro
+        List<Agendamento> agendamentos = agendamentoRepository
+                .findByPrestador_Negocio_Id(negocio.getId());
 
         return bloqueios.stream()
                 .map(b -> {
                     Cliente c = b.getCliente();
 
-                    // Conta total e cancelados desse cliente
                     long total = agendamentos.stream()
                             .filter(a -> a.getCliente().getId().equals(c.getId()))
                             .count();
@@ -354,7 +357,6 @@ public class AgendamentoService {
                             .filter(a -> a.getStatus() == StatusAgendamento.CANCELADO)
                             .count();
 
-                    // Taxa de cancelamento (0.0 padrão)
                     double taxa = (total > 0) ? ((double) cancelados / total) * 100 : 0.0;
 
                     return new ClienteResumoDTO(
@@ -363,11 +365,12 @@ public class AgendamentoService {
                             c.getEmail(),
                             c.getTelefone(),
                             true, // bloqueado
-                            Math.round(taxa * 100.0) / 100.0 // arredondado para 2 casas
+                            Math.round(taxa * 100.0) / 100.0
                     );
                 })
                 .toList();
     }
+
 
 
     @Transactional
@@ -376,25 +379,21 @@ public class AgendamentoService {
         PermissaoUtils.validarPermissao(atual, PerfilUsuario.PRESTADOR);
 
         Prestador prestador = (Prestador) atual;
+        Negocio negocio = prestador.getNegocio();
 
-        // Busca o usuário alvo e valida que é CLIENTE
+        if (negocio == null)
+            throw new IllegalArgumentException("Prestador não pertence a um negócio.");
+
         Usuario u = usuarioRepository.findById(clienteId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-        if (!(u instanceof Cliente cliente)) {
-            throw new IllegalArgumentException("Somente usuários com perfil CLIENTE podem ser bloqueados.");
-        }
+        if (!(u instanceof Cliente cliente))
+            throw new IllegalArgumentException("Apenas clientes podem ser bloqueados.");
 
-        // Evita bloquear a si mesmo por engano
-        if (u.getId().equals(prestador.getId())) {
-            throw new IllegalArgumentException("Você não pode se bloquear.");
-        }
-
-        // Cria ou reativa o bloqueio
         ClienteBloqueado bloqueio = clienteBloqueadoRepository
-                .findByPrestadorIdAndClienteId(prestador.getId(), cliente.getId())
+                .findByNegocioIdAndClienteId(negocio.getId(), cliente.getId())
                 .orElse(ClienteBloqueado.builder()
-                        .prestador(prestador)
+                        .negocio(negocio)
                         .cliente(cliente)
                         .build());
 
@@ -402,14 +401,12 @@ public class AgendamentoService {
         clienteBloqueadoRepository.save(bloqueio);
 
         // Cancela todos os agendamentos pendentes do cliente com este prestador
-        List<Agendamento> pendentes = agendamentoRepository.findByPrestadorId(prestador.getId())
-                .stream()
-                .filter(a -> a.getCliente().getId().equals(cliente.getId()))
+        agendamentoRepository.findByPrestadorId(prestador.getId()).stream()
+                .filter(a -> a.getCliente().getId().equals(clienteId))
                 .filter(a -> a.getStatus() == StatusAgendamento.PENDENTE)
-                .toList();
-
-        pendentes.forEach(a -> a.setStatus(StatusAgendamento.CANCELADO));
+                .forEach(a -> a.setStatus(StatusAgendamento.CANCELADO));
     }
+
 
 
 
@@ -419,15 +416,10 @@ public class AgendamentoService {
         PermissaoUtils.validarPermissao(atual, PerfilUsuario.PRESTADOR);
 
         Prestador prestador = (Prestador) atual;
-
-        Usuario u = usuarioRepository.findById(clienteId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-        if (!(u instanceof Cliente)) {
-            throw new IllegalArgumentException("Somente usuários com perfil CLIENTE podem ser desbloqueados.");
-        }
+        Negocio negocio = prestador.getNegocio();
 
         ClienteBloqueado bloqueio = clienteBloqueadoRepository
-                .findByPrestadorIdAndClienteId(prestador.getId(), clienteId)
+                .findByNegocioIdAndClienteId(negocio.getId(), clienteId)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não está bloqueado."));
 
         bloqueio.setAtivo(false);

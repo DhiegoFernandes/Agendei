@@ -64,31 +64,29 @@ public class AgendamentoController {
         return ResponseEntity.ok(lista);
     }
 
-    // Lista todos os clientes do prestador
+    // Lista todos os clientes atendidos pelo negócio do prestador
     @GetMapping("/clientes")
     public ResponseEntity<List<ClienteResumoDTO>> listarClientesDoPrestador() {
         return ResponseEntity.ok(agendamentoService.listarClientesDoPrestador());
     }
 
-    // Lista todos os clientes bloqueados do prestador
+    // Lista todos os clientes bloqueados do negócio
     @GetMapping("/clientes/bloqueados")
     public ResponseEntity<List<ClienteResumoDTO>> listarClientesBloqueados() {
         return ResponseEntity.ok(agendamentoService.listarClientesBloqueados());
     }
 
-    //Bloqueia cliente
+    // Bloqueia cliente no negócio
     @PutMapping("/clientes/{clienteId}/bloquear")
     public ResponseEntity<String> bloquearCliente(@PathVariable Integer clienteId) {
         agendamentoService.bloquearCliente(clienteId);
         return ResponseEntity.ok("Cliente bloqueado com sucesso.");
     }
 
-    //Desbloqueia cliente
+    // Desbloqueia cliente no negócio
     @PutMapping("/clientes/{clienteId}/desbloquear")
     public ResponseEntity<String> desbloquearCliente(@PathVariable Integer clienteId) {
         agendamentoService.desbloquearCliente(clienteId);
         return ResponseEntity.ok("Cliente desbloqueado com sucesso.");
     }
-
 }
-

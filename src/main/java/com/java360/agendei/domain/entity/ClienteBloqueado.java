@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "clientes_bloqueados",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"prestador_id", "cliente_id"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"negocio_id", "cliente_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,8 +20,8 @@ public class ClienteBloqueado {
     private Integer id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "prestador_id")
-    private Prestador prestador;
+    @JoinColumn(name = "negocio_id")
+    private Negocio negocio;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "cliente_id")

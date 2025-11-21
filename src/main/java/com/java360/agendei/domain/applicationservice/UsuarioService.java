@@ -142,8 +142,15 @@ public class UsuarioService {
         }
 
         prestador.setPlano(novoPlano);
+
+        // Ativa o negócio automaticamente após escolher um plano
+        if (isDono && prestador.getNegocio() != null && !prestador.getNegocio().isAtivo()) {
+            prestador.getNegocio().setAtivo(true);
+        }
+
         usuarioRepository.save(prestador);
     }
+
 
 
 

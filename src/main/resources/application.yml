@@ -1,19 +1,22 @@
 # ===================================================================
-# CONFIGURAÇÕES COMPARTILHADAS (VÁLIDAS PARA TODOS OS PERFIS)
+# CONFIGURAÇÕES COMPARTILHADAS (TODOS OS PERFIS)
 # ===================================================================
 server:
   servlet:
-    context-path: / #porta padrão
-    #port: 9090
+    context-path: /
+
 spring:
   application:
     name: agendei
-  jackson:  #api que pega json e transforma em objeto
-    default-property-inclusion: non_null # Só insere na serialização propriedades nulas (o que for nulo não aparece pro usr)
+
+  jackson:
+    default-property-inclusion: non_null
+
   jpa:
-    show-sql: true # Mostra o SQL gerado no console
+    show-sql: true
     hibernate:
-      ddl-auto: create-drop # update - padrão | create-drop - cria e deleta | none - nao faz nada no banco
+      ddl-auto: update  # seguro para produção
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -22,55 +25,63 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+
   maps:
     key: AIzaSyDQHCfEBOf_EO6Abo4Q-n987llQhru87Rw
+
   jwt:
     SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
 
-
-  # --- ATIVAÇÃO DO PERFIL PADRÃO ---
   profiles:
-    active: dev # dev (h2) | prod (mysql)
+    active: dev   # << DEV SEMPRE | PROD SÓ É USADO NA NUVEM
+
 
 ---
 # ===================================================================
-# PERFIL DE DESENVOLVIMENTO (dev) - USANDO H2 DATABASE
+# PERFIL DEV — H2 (LOCAL)
 # ===================================================================
 spring:
   config:
     activate:
       on-profile: dev
+
   h2:
     console:
-      enabled: true # Habilita o console do H2
-      path: /h2-console # Acessar o console: http://localhost:8080/h2-console | JDBC URL: jdbc:h2:mem:agendei
+      enabled: true
+      path: /h2-console
+
   datasource:
     url: jdbc:h2:mem:agendei
     driverClassName: org.h2.Driver
     username: sa
     password:
+
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect # Dialeto específico do H2
+    database-platform: org.hibernate.dialect.H2Dialect
+
 
 ---
 # ===================================================================
-# PERFIL DE PRODUÇÃO (prod) - USANDO MYSQL
+# PERFIL PROD — MYSQL ORACLE CLOUD (VCN PRIVADA)
 # ===================================================================
 spring:
   config:
     activate:
       on-profile: prod
+
   datasource:
-    url: jdbc:mysql://localhost:3306/agendei?useSSL=false&serverTimezone=UTC
-    username: root
-    password: 123456
+    url: jdbc:mysql://10.0.2.21:3306/agendei?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: agendei_root
+    password: Agendei@123
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
-      ddl-auto: update # Em produção, é mais seguro usar 'update' ou 'validate'
+      ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
+
   h2:
     console:
-      enabled: false # desativa o h2-console na web localhost:8080/h2-console
+      enabled: false

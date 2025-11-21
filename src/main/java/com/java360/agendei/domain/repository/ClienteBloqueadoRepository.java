@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ClienteBloqueadoRepository extends JpaRepository<ClienteBloqueado, Integer> {
-    Optional<ClienteBloqueado> findByPrestadorIdAndClienteId(Integer prestadorId, Integer clienteId);
-    List<ClienteBloqueado> findByPrestadorId(Integer prestadorId);
+    Optional<ClienteBloqueado> findByNegocioIdAndClienteId(Integer negocioId, Integer clienteId);
+
+    List<ClienteBloqueado> findByNegocioId(Integer negocioId);
+
 }

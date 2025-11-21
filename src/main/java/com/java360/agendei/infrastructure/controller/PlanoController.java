@@ -1,5 +1,6 @@
-package com.java360.agendei.domain.applicationservice;
+package com.java360.agendei.infrastructure.controller;
 
+import com.java360.agendei.domain.applicationservice.UsuarioService;
 import com.java360.agendei.domain.model.PlanoPrestador;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

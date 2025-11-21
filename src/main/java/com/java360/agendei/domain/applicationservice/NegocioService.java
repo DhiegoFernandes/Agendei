@@ -50,7 +50,7 @@ public class NegocioService {
                 .cep(dto.getCep())
                 .categoria(dto.getCategoria())
                 .criador(prestador)
-                .ativo(true) // por padrão negocio é criado ativo
+                .ativo(false) // por padrão negocio é criado desativo
                 .build();
 
         Negocio criado = negocioRepository.save(negocio);

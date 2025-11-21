@@ -35,7 +35,7 @@ public class Negocio {
 
     @Builder.Default
     @Column(nullable = false)
-    private boolean ativo = true;
+    private boolean ativo = false; // por padrão negocio é criado desativo
 
     @Column(name = "nota_media")
     private Double notaMedia;
