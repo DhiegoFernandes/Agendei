@@ -86,5 +86,22 @@ public class NegocioController {
         return ResponseEntity.ok(negocio);
     }
 
+    //Admin busca todos os negocios
+    @GetMapping("/todos")
+    public ResponseEntity<List<NegocioResumoDTO>> listarTodosNegocios() {
+        List<NegocioResumoDTO> negocios = negocioService.listarTodosNegocios();
+        return ResponseEntity.ok(negocios);
+    }
+    //Admin busca todos os negocios por nome
+    @GetMapping("/buscar-por-nome")
+    public ResponseEntity<List<NegocioResumoDTO>> buscarNegociosPorNome(
+            @RequestParam String nome
+    ) {
+        List<NegocioResumoDTO> negocios = negocioService.buscarNegociosPorNome(nome);
+        return ResponseEntity.ok(negocios);
+    }
+
+
+
 
 }

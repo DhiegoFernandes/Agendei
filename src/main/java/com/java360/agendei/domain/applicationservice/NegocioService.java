@@ -342,5 +342,31 @@ public class NegocioService {
         return NegocioDTO.fromEntity(negocio);
     }
 
+    // Lista todos negocios Admin
+    @Transactional
+    public List<NegocioResumoDTO> listarTodosNegocios() {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.ADMIN);
+
+        List<Negocio> negocios = negocioRepository.findAll();
+        return negocios.stream()
+                .map(NegocioResumoDTO::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public List<NegocioResumoDTO> buscarNegociosPorNome(String nome) {
+        Usuario usuario = UsuarioAutenticado.get();
+        PermissaoUtils.validarPermissao(usuario, PerfilUsuario.ADMIN);
+
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException("O nome do negócio não pode estar vazio.");
+        }
+
+        List<Negocio> negocios = negocioRepository.findByNomeContainingIgnoreCase(nome);
+        return negocios.stream()
+                .map(NegocioResumoDTO::fromEntity)
+                .toList();
+    }
 
 }

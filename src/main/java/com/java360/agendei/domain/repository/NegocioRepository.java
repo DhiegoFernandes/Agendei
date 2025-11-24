@@ -17,4 +17,7 @@ public interface NegocioRepository extends JpaRepository<Negocio, Integer> {
 
     long countByAtivoTrue();
 
+    List<Negocio> findByNomeContainingIgnoreCase(String nome);
+
+
 }
