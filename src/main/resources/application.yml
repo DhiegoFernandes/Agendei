@@ -22,7 +22,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: agendeiofficial@gmail.com
-    password: bpdnqberavkratjo
+    password: ygrcnbgqhkvxxypj
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -34,7 +34,7 @@ spring:
     SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
 
   profiles:
-    active: localmysql   # dev | localmysql
+    active: dev   # dev | localmysql
 
 
 ---

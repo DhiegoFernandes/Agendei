@@ -38,5 +38,6 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Intege
 
     List<Agendamento> findByPrestador_Negocio_Id(Integer negocioId);
 
+    boolean existsByServicoIdAndStatus(Integer servicoId, StatusAgendamento status);
 
 }
