@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Method;
 import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -227,7 +228,8 @@ class ServicoServiceTest {
         when(agendamentoRepository.findByPrestadorIdAndStatusAndDataHoraBetween(any(), any(), any(), any()))
                 .thenReturn(List.of());
 
-        LocalDate proximaSegunda = LocalDate.now().plusDays(1);
+        LocalDate proximaSegunda = LocalDate.now()
+                .with(TemporalAdjusters.next(DayOfWeek.MONDAY)); // pega a segunda da proxima semana
 
         HorariosDisponiveisDTO dto =
                 servicoService.listarHorariosPorServicoEData(1, proximaSegunda);
@@ -238,6 +240,7 @@ class ServicoServiceTest {
 
     @Test
     void listarHorarios_conflitoComAgendamento_naoAdicionaHorario() {
+
         Servico servico = Servico.builder()
                 .id(1)
                 .ativo(true)
@@ -248,6 +251,7 @@ class ServicoServiceTest {
 
         when(servicoRepository.findById(1)).thenReturn(Optional.of(servico));
 
+        // disponivel apenas na segunda
         Disponibilidade disp = new Disponibilidade();
         disp.setDiaSemana(DiaSemanaDisponivel.SEGUNDA);
         disp.setHoraInicio(LocalTime.of(8, 0));
@@ -257,20 +261,28 @@ class ServicoServiceTest {
         when(disponibilidadeRepository.findByPrestadorId(10))
                 .thenReturn(List.of(disp));
 
+        // próxima segunda-feira
+        LocalDate data = LocalDate.now()
+                .with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+
+        // Agendamento conflitando exatamente às 08:00
         Agendamento ag = new Agendamento();
-        ag.setDataHora(LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(8, 0)));
+        ag.setDataHora(LocalDateTime.of(data, LocalTime.of(8, 0)));
         ag.setServico(servico);
 
-        when(agendamentoRepository.findByPrestadorIdAndStatusAndDataHoraBetween(any(), any(), any(), any()))
+        when(agendamentoRepository
+                .findByPrestadorIdAndStatusAndDataHoraBetween(any(), any(), any(), any()))
                 .thenReturn(List.of(ag));
 
         HorariosDisponiveisDTO dto =
-                servicoService.listarHorariosPorServicoEData(1, LocalDate.now().plusDays(1));
+                servicoService.listarHorariosPorServicoEData(1, data);
 
         List<String> horarios = dto.getDiasDisponiveis().get(0).getHorarios();
 
+        // 08:00 (conflito)
         assertFalse(horarios.contains("08:00"));
-        assertTrue(horarios.contains("09:00")); // horários válidos continuam
+        // 09:00 (livre)
+        assertTrue(horarios.contains("09:00"));
     }
 
 
