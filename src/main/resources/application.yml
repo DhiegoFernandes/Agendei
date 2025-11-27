@@ -34,7 +34,7 @@ spring:
     SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
 
   profiles:
-    active: dev   # dev | localmysql
+    active: localmysql   # dev | localmysql
 
 
 ---

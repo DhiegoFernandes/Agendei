@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 "/servicos/busca",
                                 "/servicos/negocio/**",
                                 "/negocios/*/fotos/**",
-                                "/negocios/**"
+                                "/negocios/**",
+                                "/agendamentos/**"
                         ).permitAll()// Acesso livre nessas URI
                         .anyRequest().authenticated()
                 )
