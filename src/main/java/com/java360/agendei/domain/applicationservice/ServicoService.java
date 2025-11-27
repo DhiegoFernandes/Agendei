@@ -200,6 +200,22 @@ public class ServicoService {
             throw new IllegalArgumentException("O valor máximo permitido para um serviço é de R$ 5000,00.");
         }
 
+        // VALIDAÇÃO: duração não pode ser alterada se existirem agendamentos pendentes
+        if (dto.getDuracaoMinutos() != servico.getDuracaoMinutos()) {
+            boolean existeAgendamentoPendente =
+                    agendamentoRepository.existsByServicoIdAndStatus(
+                            id,
+                            StatusAgendamento.PENDENTE
+                    );
+
+            if (existeAgendamentoPendente) {
+                throw new IllegalArgumentException(
+                        "Não é possível alterar a duração deste serviço pois existem agendamentos pendentes."
+                );
+            }
+        }
+
+
         // Verifica duplicação de título para o mesmo prestador, ignorando o próprio serviço atual
         boolean tituloDuplicado = servicoRepository
                 .existsByTituloAndPrestadorIdAndIdNot(dto.getTitulo(), usuario.getId(), id);
