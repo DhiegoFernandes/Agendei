@@ -55,6 +55,7 @@ public class RelatorioService {
                 .findByPrestadorIdAndDataHoraBetween(prestadorId, inicio.atStartOfDay(), fim.atTime(23, 59));
 
         BigDecimal ganhosEsperados = agendamentos.stream()
+                .filter(a -> a.getStatus() == StatusAgendamento.PENDENTE) // <-- filtra apenas pendentes
                 .map(a -> BigDecimal.valueOf(a.getServico().getValor()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 

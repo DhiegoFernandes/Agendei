@@ -10,7 +10,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "agendamentos")
+@Table(name = "agendamentos",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_agendamento_prestador_cliente_horario",
+                columnNames = {"prestador_id", "cliente_id", "dataHora"}
+        ))
 @Data
 @Builder
 @AllArgsConstructor
