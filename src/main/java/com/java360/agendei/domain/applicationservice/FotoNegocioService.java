@@ -100,16 +100,16 @@ public class FotoNegocioService {
             throw new IllegalArgumentException("Foto não pertence a esse negócio.");
         }
 
-        // Apenas o dono do negócio ou prestador associado pode deletar
+        // Apenas o dono do negócio ou ADMIN pode deletar
         boolean isDono = negocio.getCriador().getId().equals(usuario.getId());
-        boolean isPrestadorAssociado = usuario instanceof Prestador p && p.getNegocio() != null && p.getNegocio().getId().equals(negocioId);
 
-        if (!isDono && !isPrestadorAssociado && !PermissaoUtils.isAdmin(usuario)) {
+        if (!isDono && !PermissaoUtils.isAdmin(usuario)) {
             throw new IllegalArgumentException("Você não tem permissão para deletar esta foto.");
         }
 
         fotoNegocioRepository.delete(foto);
     }
+
 
 
 }
