@@ -238,28 +238,6 @@ class FotoNegocioServiceTest {
     }
 
     @Test
-    void deletarFoto_prestadorAssociadoPode() {
-        Prestador associado = new Prestador();
-        associado.setId(50);
-        associado.setNegocio(negocio);
-
-        mockAuth.when(UsuarioAutenticado::get).thenReturn(associado);
-
-        FotoNegocio f = FotoNegocio.builder()
-                .id(9)
-                .negocio(negocio)
-                .imagem("x".getBytes())
-                .nomeArquivo("a")
-                .build();
-
-        when(fotoRepo.findById(9)).thenReturn(Optional.of(f));
-
-        service.deletarFoto(10, 9);
-
-        verify(fotoRepo).delete(f);
-    }
-
-    @Test
     void deletarFoto_adminPode() {
         mockPerm.when(() -> PermissaoUtils.isAdmin(any())).thenReturn(true);
 

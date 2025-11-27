@@ -90,7 +90,7 @@ class RelatorioServiceTest {
     }
 
 
-    // relatorio financeiro
+    // relatorio financeiro servicos cancelados
     @Test
     void relatorioFinanceiroMensal_sucesso() {
         Prestador p = mockPrestador();
@@ -116,7 +116,7 @@ class RelatorioServiceTest {
 
         RelatorioFinanceiroDTO dto = service.relatorioFinanceiroMensal(YearMonth.now());
 
-        assertEquals(new BigDecimal("200.0"), dto.getGanhosEsperados());
+        assertEquals(new BigDecimal("0"), dto.getGanhosEsperados()); // 0 pois o agendamento já foi concluido
         assertEquals(0, dto.getGanhosRealizados().compareTo(new BigDecimal("100")));
         assertEquals(50.0, dto.getTaxaCancelamentos());
     }

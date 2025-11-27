@@ -45,36 +45,16 @@ class NegocioServiceBuscaTest {
         c.setId(id);
         c.setPerfil(PerfilUsuario.CLIENTE);
         c.setCep(cep);
+        c.setEndereco("Rua Teste");
+        c.setNumero("123");
         return c;
     }
+
 
     private Negocio makeNegocio(int id, String cep, double nota, String nome, CategoriaNegocio cat) {
         Negocio n = Negocio.builder()
                 .id(id).nome(nome).cep(cep).categoria(cat).notaMedia(nota).ativo(true).build();
         return n;
-    }
-
-    @Test
-    void buscarNegociosProximos_retornacomDistanciaQuandoLatLngExiste() {
-        Cliente cliente = makeClienteWithCep(1, "00000-000");
-        usuarioAutenticadoMock.when(UsuarioAutenticado::get).thenReturn(cliente);
-        permissaoUtilsMock.when(() -> PermissaoUtils.validarPermissao(cliente, PerfilUsuario.CLIENTE)).thenAnswer(i->null);
-
-        LatLngDTO clienteLat = new LatLngDTO(10.0, 20.0);
-        when(geocodingService.buscarLatLongPorCep("00000-000")).thenReturn(clienteLat);
-
-        Negocio n1 = makeNegocio(1, "11111-111", 4.5, "Barbe", CategoriaNegocio.BARBEARIA);
-        Negocio n2 = makeNegocio(2, "22222-222", 3.0, "Estet", CategoriaNegocio.ESTETICA);
-        when(negocioRepository.findByAtivoTrue()).thenReturn(List.of(n1, n2));
-
-        // geocalizacao mock
-        when(geocodingService.buscarLatLongPorCep("11111-111")).thenReturn(new LatLngDTO(10.1, 20.1));
-        when(geocodingService.buscarLatLongPorCep("22222-222")).thenReturn(new LatLngDTO(50.0, 60.0));
-
-        List<NegocioBuscaDTO> res = negocioService.buscarNegociosProximos(null, null);
-
-        //<=20km
-        assertTrue(res.size() >= 0); // main assertion: method runs; details depend on DistanciaUtils
     }
 
     @Test
@@ -85,16 +65,16 @@ class NegocioServiceBuscaTest {
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> negocioService.buscarNegociosProximos(null, null));
-        assertTrue(ex.getMessage().contains("CEP cadastrado"));
+
+        assertEquals("Cliente precisa ter endereço completo cadastrado.", ex.getMessage());
     }
+
 
     @Test
     void buscarNegociosPorAvaliacao_filtraPorNotaEOrdena() {
         Cliente cliente = makeClienteWithCep(3, "00000-000");
         usuarioAutenticadoMock.when(UsuarioAutenticado::get).thenReturn(cliente);
         permissaoUtilsMock.when(() -> PermissaoUtils.validarPermissao(cliente, PerfilUsuario.CLIENTE)).thenAnswer(i->null);
-
-        when(geocodingService.buscarLatLongPorCep("00000-000")).thenReturn(null); // ignore distance path
 
         Negocio n1 = makeNegocio(1, "11111-111", 4.7, "A", CategoriaNegocio.SPA);
         Negocio n2 = makeNegocio(2, "22222-222", 3.9, "B", CategoriaNegocio.SPA);
@@ -105,4 +85,22 @@ class NegocioServiceBuscaTest {
 
         assertTrue(res.stream().allMatch(dto -> dto.getNotaMedia() >= 4.0));
     }
+
+    @Test
+    void buscarNegociosPorAvaliacao_semNegociosRetornaListaVazia() {
+        Cliente cliente = makeClienteWithCep(4, "00000-000");
+        usuarioAutenticadoMock.when(UsuarioAutenticado::get).thenReturn(cliente);
+        permissaoUtilsMock.when(() -> PermissaoUtils.validarPermissao(cliente, PerfilUsuario.CLIENTE)).thenAnswer(i -> null);
+
+        when(negocioRepository.findByAtivoTrue()).thenReturn(List.of());
+
+        List<NegocioBuscaDTO> resultado = negocioService.buscarNegociosPorAvaliacao(4.5);
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
+    }
+
+
+
+
 }

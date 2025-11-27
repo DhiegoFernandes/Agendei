@@ -237,34 +237,41 @@ public class NegocioService {
             throw new IllegalArgumentException("Somente clientes podem buscar negócios próximos.");
         }
 
-        if (cliente.getCep() == null || cliente.getCep().isBlank()) {
-            throw new IllegalArgumentException("Cliente não possui CEP cadastrado.");
+        if (cliente.getEndereco() == null || cliente.getNumero() == null || cliente.getCep() == null) {
+            throw new IllegalArgumentException("Cliente precisa ter endereço completo cadastrado.");
         }
 
-        LatLngDTO clienteLatLng = geocodingService.buscarLatLongPorCep(cliente.getCep());
+        String enderecoCliente = cliente.getEndereco() + ", " + cliente.getNumero() + ", " + cliente.getCep() + ", Brasil";
+
+        LatLngDTO clienteLatLng = geocodingService.buscarLatLong(enderecoCliente);
 
         List<Negocio> negocios = negocioRepository.findByAtivoTrue().stream()
                 .filter(n -> nome == null || n.getNome().toLowerCase().contains(nome.toLowerCase()))
                 .filter(n -> categoria == null || n.getCategoria() == categoria)
-                .filter(n -> n.getCep() != null && !n.getCep().isBlank())
                 .toList();
 
-        // Se não encontrar coordenadas → retorna tudo sem distância
         if (clienteLatLng == null) {
+            // Retorna negócios sem calcular distância
             return negocios.stream()
-                    .map(n -> NegocioBuscaDTO.fromEntity(n, 0.0)) // distância ignorada
+                    .map(n -> NegocioBuscaDTO.fromEntity(n, 0.0))
                     .toList();
         }
 
         return negocios.stream()
                 .map(n -> {
                     try {
-                        LatLngDTO negocioLatLng = geocodingService.buscarLatLongPorCep(n.getCep());
+                        String enderecoNegocio = montarEnderecoCompleto(n);
+                        LatLngDTO negocioLatLng = geocodingService.buscarLatLong(enderecoNegocio);
+
+                        if (negocioLatLng == null) return null;
+
                         double distancia = DistanciaUtils.calcularDistancia(
                                 clienteLatLng.getLat(), clienteLatLng.getLng(),
                                 negocioLatLng.getLat(), negocioLatLng.getLng()
                         );
+
                         return NegocioBuscaDTO.fromEntity(n, distancia);
+
                     } catch (Exception e) {
                         return null;
                     }
@@ -272,6 +279,10 @@ public class NegocioService {
                 .filter(dto -> dto != null && dto.getDistanciaKm() <= 20.0)
                 .sorted((a, b) -> Double.compare(a.getDistanciaKm(), b.getDistanciaKm()))
                 .toList();
+    }
+
+    private String montarEnderecoCompleto(Negocio n) {
+        return n.getEndereco() + ", " + n.getNumero() + ", " + n.getCep() + ", Brasil";
     }
 
 
@@ -286,24 +297,25 @@ public class NegocioService {
             throw new IllegalArgumentException("Somente clientes podem buscar negócios por avaliação.");
         }
 
-        if (cliente.getCep() == null || cliente.getCep().isBlank()) {
-            throw new IllegalArgumentException("Cliente não possui CEP cadastrado.");
+        // Cliente deve ter endereço completo
+        if (cliente.getEndereco() == null || cliente.getNumero() == null || cliente.getCep() == null) {
+            throw new IllegalArgumentException("Cliente precisa ter endereço completo cadastrado.");
         }
 
-        LatLngDTO clienteLatLng = geocodingService.buscarLatLongPorCep(cliente.getCep());
+        String enderecoCliente = cliente.getEndereco() + ", " +
+                cliente.getNumero() + ", " +
+                cliente.getCep() + ", Brasil";
 
-        // Corrigido: declara notaMin
+        LatLngDTO clienteLatLng = geocodingService.buscarLatLong(enderecoCliente);
+
         double notaMin = (notaMinima != null) ? notaMinima : 0.0;
 
         List<Negocio> negocios = negocioRepository.findByAtivoTrue().stream()
-                .filter(n -> {
-                    double nota = n.getNotaMedia() != null ? n.getNotaMedia() : 0.0;
-                    return nota >= notaMin;
-                })
-                .filter(n -> n.getCep() != null && !n.getCep().isBlank())
+                .filter(n -> (n.getNotaMedia() != null ? n.getNotaMedia() : 0.0) >= notaMin)
+                .filter(n -> n.getEndereco() != null && n.getNumero() != null && n.getCep() != null)
                 .toList();
 
-        // Se o CEP do cliente for inválido → retorna tudo ignorando distância
+        // Se não conseguiu localizar o cliente, retorna sem distância
         if (clienteLatLng == null) {
             return negocios.stream()
                     .map(n -> NegocioBuscaDTO.fromEntity(n, 0.0))
@@ -313,7 +325,15 @@ public class NegocioService {
         return negocios.stream()
                 .map(n -> {
                     try {
-                        LatLngDTO negocioLatLng = geocodingService.buscarLatLongPorCep(n.getCep());
+                        // Endereço completo do negócio
+                        String enderecoNegocio = n.getEndereco() + ", " +
+                                n.getNumero() + ", " +
+                                n.getCep() + ", Brasil";
+
+                        LatLngDTO negocioLatLng = geocodingService.buscarLatLong(enderecoNegocio);
+
+                        if (negocioLatLng == null) return null;
+
                         double distancia = DistanciaUtils.calcularDistancia(
                                 clienteLatLng.getLat(), clienteLatLng.getLng(),
                                 negocioLatLng.getLat(), negocioLatLng.getLng()
