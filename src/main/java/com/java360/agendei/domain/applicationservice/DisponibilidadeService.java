@@ -1,10 +1,13 @@
 package com.java360.agendei.domain.applicationservice;
 
+import com.java360.agendei.domain.entity.Agendamento;
 import com.java360.agendei.domain.entity.Disponibilidade;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.entity.Usuario;
 import com.java360.agendei.domain.model.DiaSemanaDisponivel;
 import com.java360.agendei.domain.model.PerfilUsuario;
+import com.java360.agendei.domain.model.StatusAgendamento;
+import com.java360.agendei.domain.repository.AgendamentoRepository;
 import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.DisponibilidadeDTO;
@@ -28,6 +31,7 @@ public class DisponibilidadeService {
 
     private final DisponibilidadeRepository disponibilidadeRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AgendamentoRepository agendamentoRepository;
 
     public boolean prestadorEstaDisponivel(Integer prestadorId, LocalDateTime inicioAgendamento, int duracaoMinutos) {
         DayOfWeek diaSemana = inicioAgendamento.getDayOfWeek();
@@ -122,11 +126,46 @@ public class DisponibilidadeService {
             throw new IllegalArgumentException("Horário de almoço deve estar entre 05:00 e 20:00.");
         }
 
-        prestador.setHoraInicioAlmoco(horaInicio);
-        prestador.setHoraFimAlmoco(horaInicio.plusHours(1));
+        LocalTime novoInicio = horaInicio;
+        LocalTime novoFim = horaInicio.plusHours(1);
 
+        // Salva novo horário de almoço
+        prestador.setHoraInicioAlmoco(novoInicio);
+        prestador.setHoraFimAlmoco(novoFim);
         usuarioRepository.save(prestador);
+
+        // CANCELA AGENDAMENTOS DENTRO DO NOVO HORÁRIO DE ALMOÇO
+        cancelarAgendamentosDuranteAlmoco(prestador, novoInicio, novoFim);
     }
+
+    @Transactional
+    private void cancelarAgendamentosDuranteAlmoco(Prestador prestador, LocalTime inicio, LocalTime fim) {
+        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorId(prestador.getId());
+
+        for (Agendamento ag : agendamentos) {
+
+            if (ag.getStatus() != StatusAgendamento.PENDENTE) continue;
+
+            LocalDateTime agInicio = ag.getDataHora();
+            LocalDateTime agFim = ag.getDataHora().plusMinutes(ag.getServico().getDuracaoMinutos());
+
+            LocalDateTime almocoInicioDT = LocalDateTime.of(agInicio.toLocalDate(), inicio);
+            LocalDateTime almocoFimDT = LocalDateTime.of(agInicio.toLocalDate(), fim);
+
+            if (overlaps(agInicio, agFim, almocoInicioDT, almocoFimDT)) {
+                ag.setStatus(StatusAgendamento.CANCELADO);
+                agendamentoRepository.save(ag);
+
+            }
+        }
+    }
+
+    private boolean overlaps(LocalDateTime inicio1, LocalDateTime fim1,
+                             LocalDateTime inicio2, LocalDateTime fim2) {
+        return inicio1.isBefore(fim2) && fim1.isAfter(inicio2);
+    }
+
+
 
     @Transactional
     public HorarioAlmocoDTO buscarHorarioAlmoco() {

@@ -22,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalTime;
+
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
@@ -59,7 +61,14 @@ public class UsuarioService {
                 cliente.setNumero(dto.getNumero());
                 usuario = cliente;
             }
-            case PRESTADOR -> usuario = new Prestador();
+            case PRESTADOR -> {
+                Prestador prestador = new Prestador();
+                // é definido um horário de almoço padrão 12:00 ao criar prestador
+                prestador.setHoraInicioAlmoco(LocalTime.of(12, 0));
+                prestador.setHoraFimAlmoco(LocalTime.of(13, 0));
+
+                usuario = prestador;
+            }
             case ADMIN -> usuario = new Administrador();
             default -> throw new IllegalArgumentException("Perfil inválido.");
         }
