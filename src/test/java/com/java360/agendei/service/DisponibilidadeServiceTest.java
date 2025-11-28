@@ -4,6 +4,7 @@ import com.java360.agendei.domain.applicationservice.DisponibilidadeService;
 import com.java360.agendei.domain.entity.Disponibilidade;
 import com.java360.agendei.domain.entity.Prestador;
 import com.java360.agendei.domain.model.DiaSemanaDisponivel;
+import com.java360.agendei.domain.repository.AgendamentoRepository;
 import com.java360.agendei.domain.repository.DisponibilidadeRepository;
 import com.java360.agendei.domain.repository.UsuarioRepository;
 import com.java360.agendei.infrastructure.dto.DisponibilidadeDTO;
@@ -29,6 +30,7 @@ class DisponibilidadeServiceTest {
 
     @Mock private DisponibilidadeRepository disponibilidadeRepository;
     @Mock private UsuarioRepository usuarioRepository;
+    @Mock private AgendamentoRepository agendamentoRepository;
 
     @InjectMocks private DisponibilidadeService service;
 
@@ -253,13 +255,19 @@ class DisponibilidadeServiceTest {
 
     @Test
     void definirHorarioAlmoco_sucesso() {
+        // quando salvar o prestador
         when(usuarioRepository.save(any())).thenReturn(prestador);
+
+        // evitar NullPointer durante o cancelamento de agendamentos
+        when(agendamentoRepository.findByPrestadorId(10))
+                .thenReturn(Collections.emptyList());
 
         service.definirHorarioAlmoco(LocalTime.of(12, 0));
 
         assertEquals(LocalTime.of(12, 0), prestador.getHoraInicioAlmoco());
         assertEquals(LocalTime.of(13, 0), prestador.getHoraFimAlmoco());
     }
+
 
     @Test
     void definirHorarioAlmoco_erro_horarioInvalido() {
