@@ -70,10 +70,7 @@ public class SecurityConfig {
         // Todas as URLs que precisam acessar a API
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",   // desenvolvimento local
-
-                //TODO
-                "https://staging.agendei.com.br", // staging
-                "https://www.agendei.com.br"      // produção
+                "https://agendei-dusky.vercel.app"
         ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
