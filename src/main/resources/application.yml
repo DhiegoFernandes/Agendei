@@ -34,8 +34,42 @@ spring:
     SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
 
   profiles:
-    active: prod   # dev | localmysql
+    active: sqlserver   # dev | localmysql
 
+---
+# ===================================================================
+# PERFIL SQL SERVER
+# ===================================================================
+spring:
+  config:
+    activate:
+      on-profile: sqlserver
+
+  datasource:
+    url: jdbc:sqlserver://agendeidb.database.windows.net:1433;databaseName=agendeidb;encrypt=true;trustServerCertificate=false;loginTimeout=30;
+    username: dbmaster
+    password: Agendei@123
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+    hikari:
+      minimum-idle: 0
+      maximum-pool-size: 5
+      idle-timeout: 300000
+      max-lifetime: 600000
+      connection-timeout: 30000
+      pool-name: AgendeiHikariPoolSQLServer
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.SQLServerDialect
+
+server:
+  address: 0.0.0.0
+  port: 8080
 
 ---
 # ===================================================================
@@ -97,10 +131,11 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
   h2:
     console:
       enabled: false
+
