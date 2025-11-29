@@ -21,21 +21,20 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: agendeiofficial@gmail.com
-    password: ygrcnbgqhkvxxypj
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
   maps:
-    key: AIzaSyDQHCfEBOf_EO6Abo4Q-n987llQhru87Rw
+    key: ${GOOGLE_MAPS_KEY}
 
   jwt:
-    SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
+    SECRET_KEY: ${JWT_SECRET_KEY}
 
   profiles:
-    active: localmysql   # dev | localmysql
-
+    active: localmysql   # dev | localmysql | prod | railway
 
 ---
 # ===================================================================
@@ -57,19 +56,18 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
 
-
 ---
 # ===================================================================
-# PERFIL PROD — MYSQL ORACLE CLOUD (VCN PRIVADA)
+# PERFIL PROD — PRODUÇÃO (Ex: Oracle Cloud ou similar)
 # ===================================================================
 spring:
   config:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:mysql://10.0.2.21:3306/agendei?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: agendei_root
-    password: Agendei@123
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -80,7 +78,6 @@ spring:
   h2:
     console:
       enabled: false
-
 
 ---
 # ===================================================================
@@ -104,3 +101,25 @@ spring:
   h2:
     console:
       enabled: false
+
+# ===================================================================
+# CASO QUEIRA, PODE CRIAR UM PERFIL RAILWAY SEPARADO (OPCIONAL)
+# ===================================================================
+# spring:
+#   config:
+#     activate:
+#       on-profile: railway
+#   datasource:
+#     url: ${SPRING_DATASOURCE_URL}
+#     username: ${SPRING_DATASOURCE_USERNAME}
+#     password: ${SPRING_DATASOURCE_PASSWORD}
+#     driver-class-name: com.mysql.cj.jdbc.Driver
+#   jpa:
+#     hibernate:
+#       ddl-auto: update
+#     properties:
+#       hibernate:
+#         dialect: org.hibernate.dialect.MySQLDialect
+#   h2:
+#     console:
+#       enabled: false
