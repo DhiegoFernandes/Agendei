@@ -70,7 +70,8 @@ public class SecurityConfig {
         // Todas as URLs que precisam acessar a API
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",   // desenvolvimento local
-                "https://agendei-dusky.vercel.app"
+                "https://agendei-dusky.vercel.app",
+                "https://red-island-067d14e0f.3.azurestaticapps.net"
         ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
