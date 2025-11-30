@@ -51,18 +51,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=sqlserver
 # Para MySQL produção
 mvn spring-boot:run -Dspring-boot.run.profiles=prod
 
-4. Endpoints principais:
-- /disponibilidades - CRUD de horários do prestador
-- /disponibilidades/almoco - Configuração do horário de almoço
-- /agendamentos - Gerenciamento de agendamentos
-- /auth/login - Autenticação via JWT
-
-5. Variáveis importantes:
-- spring.mail.username e spring.mail.password para envio de e-mails
-- spring.maps.key para integração com Google Maps
-- spring.jwt.SECRET_KEY para geração e validação de tokens JWT
-
-Banco de Dados:
+# Banco de Dados:
 
 Script de criação (MySQL exemplo local):
 CREATE DATABASE agendei;
@@ -81,12 +70,6 @@ Autenticação:
 - Roles: CLIENTE, PRESTADOR, ADMIN
 - O ADMIN possui permissão total no sistema
 
-Contato / Suporte:
-- Desenvolvedor: Dhiego Fernandes da Silva
-- E-mail: agendeiofficial@gmail.com
+Projeto agendei:
+- Desenvolvedores: Dhiego Fernandes da Silva, Guilherme Cunha Alves, Moises Alves Silva
 - Frontend integrado: https://red-island-067d14e0f.3.azurestaticapps.net
-
-Observações:
-- Repositório privado compartilhado com jmarti-senac (obrigatório para entrega)
-- Último commit e TAG versionada: v1.0.0
-- Não realizar alterações após a entrega
