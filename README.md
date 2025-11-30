@@ -1,7 +1,7 @@
 # Agendei - Backend
 
 Versão: v1.0.0
-Último Commit: <INSIRA_AQUI_O_HASH_DO_ULTIMO_COMMIT>
+Último Commit: 6038b2e21a8f6d70a702b3519ccde865999eaecb
 Data: 30/11/2025
 
 # Descrição do Projeto:
