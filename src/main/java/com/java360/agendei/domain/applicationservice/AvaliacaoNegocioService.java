@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -60,7 +61,7 @@ public class AvaliacaoNegocioService {
             // Atualiza avaliação existente
             avaliacaoExistente.setNota(dto.getNota());
             avaliacaoExistente.setComentario(dto.getComentario());
-            avaliacaoExistente.setDataAvaliacao(LocalDateTime.now());
+            avaliacaoExistente.setDataAvaliacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
             avaliacao = avaliacaoExistente;
         } else {
             // Cria nova avaliação
@@ -70,7 +71,7 @@ public class AvaliacaoNegocioService {
                     .agendamento(agendamento)
                     .nota(dto.getNota())
                     .comentario(dto.getComentario())
-                    .dataAvaliacao(LocalDateTime.now())
+                    .dataAvaliacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                     .build();
         }
 

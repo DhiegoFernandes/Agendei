@@ -154,7 +154,7 @@ class ServicoServiceTest {
                 .thenReturn(Optional.of(servico));
 
         Disponibilidade disp = new Disponibilidade();
-        disp.setDiaSemana(DiaSemanaDisponivel.values()[LocalDate.now().minusDays(1).getDayOfWeek().getValue() - 1]);
+        disp.setDiaSemana(DiaSemanaDisponivel.values()[LocalDate.now(ZoneId.of("America/Sao_Paulo")).minusDays(1).getDayOfWeek().getValue() - 1]);
         disp.setAtivo(true);
         disp.setHoraInicio(LocalTime.of(8, 0));
         disp.setHoraFim(LocalTime.of(12, 0));
@@ -162,7 +162,7 @@ class ServicoServiceTest {
         when(disponibilidadeRepository.findByPrestadorId(prestador.getId()))
                 .thenReturn(List.of(disp));
 
-        LocalDate ontem = LocalDate.now().minusDays(1);
+        LocalDate ontem = LocalDate.now(ZoneId.of("America/Sao_Paulo")).minusDays(1);
 
         HorariosDisponiveisDTO dto =
                 servicoService.listarHorariosPorServicoEData(1, ontem);
@@ -184,7 +184,7 @@ class ServicoServiceTest {
         when(servicoRepository.findById(1)).thenReturn(Optional.of(servico));
 
         assertThrows(IllegalArgumentException.class, () ->
-                servicoService.listarHorariosPorServicoEData(1, LocalDate.now()));
+                servicoService.listarHorariosPorServicoEData(1, LocalDate.now(ZoneId.of("America/Sao_Paulo"))));
     }
 
     @Test
@@ -202,7 +202,7 @@ class ServicoServiceTest {
                 .thenReturn(List.of());
 
         assertThrows(IllegalArgumentException.class, () ->
-                servicoService.listarHorariosPorServicoEData(1, LocalDate.now()));
+                servicoService.listarHorariosPorServicoEData(1, LocalDate.now(ZoneId.of("America/Sao_Paulo"))));
     }
 
     @Test
@@ -231,7 +231,7 @@ class ServicoServiceTest {
                         .findByPrestadorIdAndStatusAndDataHoraBetween(any(), any(), any(), any()))
                 .thenReturn(List.of());
 
-        LocalDate data = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        LocalDate data = LocalDate.now(ZoneId.of("America/Sao_Paulo")).with(TemporalAdjusters.next(DayOfWeek.MONDAY));
 
         HorariosDisponiveisDTO dto = servicoService.listarHorariosPorServicoEData(1, data);
 
@@ -263,7 +263,7 @@ class ServicoServiceTest {
         when(disponibilidadeRepository.findByPrestadorId(10))
                 .thenReturn(List.of(disp));
 
-        LocalDate data = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        LocalDate data = LocalDate.now(ZoneId.of("America/Sao_Paulo")).with(TemporalAdjusters.next(DayOfWeek.MONDAY));
 
         Agendamento ag = new Agendamento();
         ag.setDataHora(LocalDateTime.of(data, LocalTime.of(8, 0)));

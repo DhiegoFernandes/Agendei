@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Random;
 
 @Service
@@ -63,7 +64,7 @@ public class AuthService {
         CodigoRecuperacao novoCodigo = CodigoRecuperacao.builder()
                 .email(email)
                 .codigo(codigo)
-                .expiraEm(LocalDateTime.now().plusMinutes(10))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusMinutes(10))
                 .ativo(true)
                 .build();
 
@@ -78,7 +79,7 @@ public class AuthService {
         var registro = codigoRepo.findByEmailAndCodigo(dto.getEmail(), dto.getCodigo())
                 .orElseThrow(() -> new IllegalArgumentException("Código inválido."));
 
-        if (registro.getExpiraEm().isBefore(LocalDateTime.now())) {
+        if (registro.getExpiraEm().isBefore(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))) {
             throw new IllegalArgumentException("Código expirado.");
         }
 
@@ -95,7 +96,7 @@ public class AuthService {
         var registro = codigoRepo.findByEmailAndCodigo(dto.getEmail(), dto.getCodigo())
                 .orElseThrow(() -> new IllegalArgumentException("Código inválido."));
 
-        if (registro.getExpiraEm().isBefore(LocalDateTime.now())) {
+        if (registro.getExpiraEm().isBefore(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))) {
             throw new IllegalArgumentException("Código expirado.");
         }
 

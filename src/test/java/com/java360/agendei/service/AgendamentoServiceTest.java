@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,7 +125,7 @@ class AgendamentoServiceTest {
         Servico servico = criarServico(3, prestador, negocio, true, 60);
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
-        LocalDateTime dataHora = LocalDateTime.now().plusDays(1);
+        LocalDateTime dataHora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1);
         when(dto.getServicoId()).thenReturn(servico.getId());
         when(dto.getDataHora()).thenReturn(dataHora);
 
@@ -197,7 +198,7 @@ class AgendamentoServiceTest {
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
         when(dto.getServicoId()).thenReturn(1);
-        when(dto.getDataHora()).thenReturn(LocalDateTime.now().minusDays(1));
+        when(dto.getDataHora()).thenReturn(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).minusDays(1));
 
         when(agendamentoRepository.countByClienteIdAndStatus(anyInt(), any()))
                 .thenReturn(0L);
@@ -219,7 +220,7 @@ class AgendamentoServiceTest {
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
         when(dto.getServicoId()).thenReturn(servico.getId());
-        when(dto.getDataHora()).thenReturn(LocalDateTime.now().plusDays(1));
+        when(dto.getDataHora()).thenReturn(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1));
 
         when(agendamentoRepository.countByClienteIdAndStatus(anyInt(), any()))
                 .thenReturn(0L);
@@ -242,7 +243,7 @@ class AgendamentoServiceTest {
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
         when(dto.getServicoId()).thenReturn(servico.getId());
-        when(dto.getDataHora()).thenReturn(LocalDateTime.now().plusDays(1));
+        when(dto.getDataHora()).thenReturn(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1));
 
         when(agendamentoRepository.countByClienteIdAndStatus(anyInt(), any()))
                 .thenReturn(0L);
@@ -272,7 +273,7 @@ class AgendamentoServiceTest {
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
         when(dto.getServicoId()).thenReturn(servico.getId());
-        when(dto.getDataHora()).thenReturn(LocalDateTime.now().plusDays(1));
+        when(dto.getDataHora()).thenReturn(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1));
 
         when(agendamentoRepository.countByClienteIdAndStatus(anyInt(), any()))
                 .thenReturn(0L);
@@ -298,7 +299,7 @@ class AgendamentoServiceTest {
         Servico servico = criarServico(3, prestador, negocio, true, 60);
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
-        LocalDateTime dataHora = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.of(12, 30));
+        LocalDateTime dataHora = LocalDateTime.of(LocalDate.now(ZoneId.of("America/Sao_Paulo")).plusDays(1), LocalTime.of(12, 30));
         when(dto.getServicoId()).thenReturn(servico.getId());
         when(dto.getDataHora()).thenReturn(dataHora);
 
