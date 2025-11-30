@@ -180,7 +180,7 @@ class AgendamentoServiceTest {
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
         when(dto.getServicoId()).thenReturn(null);
-        lenient().when(dto.getDataHora()).thenReturn(LocalDateTime.now().plusDays(1));
+        lenient().when(dto.getDataHora()).thenReturn(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1));
 
         when(agendamentoRepository.countByClienteIdAndStatus(anyInt(), any()))
                 .thenReturn(0L);
@@ -325,7 +325,7 @@ class AgendamentoServiceTest {
         Servico servico = criarServico(3, prestador, negocio, true, 60);
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
-        LocalDateTime dataHora = LocalDateTime.now().plusDays(1);
+        LocalDateTime dataHora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1);
         when(dto.getServicoId()).thenReturn(servico.getId());
         when(dto.getDataHora()).thenReturn(dataHora);
 
@@ -353,7 +353,7 @@ class AgendamentoServiceTest {
         Servico servico = criarServico(3, prestador, negocio, true, 60);
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
-        LocalDateTime dataHora = LocalDateTime.now().plusDays(1).withHour(10).withMinute(0);
+        LocalDateTime dataHora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1).withHour(10).withMinute(0);
         when(dto.getServicoId()).thenReturn(servico.getId());
         when(dto.getDataHora()).thenReturn(dataHora);
 
@@ -396,7 +396,7 @@ class AgendamentoServiceTest {
         Servico servicoAntigo = criarServico(3, prestador, negocio, true, 30);
         Servico servicoNovo = criarServico(4, prestador, negocio, true, 60);
 
-        LocalDateTime dataAntiga = LocalDateTime.now().plusDays(1).withHour(9);
+        LocalDateTime dataAntiga = LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1).withHour(9);
         Agendamento agendamento = Agendamento.builder()
                 .id(100)
                 .cliente(cliente)
@@ -442,12 +442,12 @@ class AgendamentoServiceTest {
                 .cliente(cliente)
                 .prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().plusDays(1))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1))
                 .status(StatusAgendamento.CANCELADO)
                 .build();
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
-        lenient().when(dto.getDataHora()).thenReturn(LocalDateTime.now().plusDays(2));
+        lenient().when(dto.getDataHora()).thenReturn(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(2));
 
         when(agendamentoRepository.findById(agendamento.getId()))
                 .thenReturn(Optional.of(agendamento));
@@ -478,12 +478,12 @@ class AgendamentoServiceTest {
                 .cliente(cliente)
                 .prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().plusDays(1))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1))
                 .status(StatusAgendamento.PENDENTE)
                 .build();
 
         CreateAgendamentoDTO dto = mock(CreateAgendamentoDTO.class);
-        lenient().when(dto.getDataHora()).thenReturn(LocalDateTime.now().plusDays(2));
+        lenient().when(dto.getDataHora()).thenReturn(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(2));
 
         when(agendamentoRepository.findById(agendamento.getId()))
                 .thenReturn(Optional.of(agendamento));
@@ -509,7 +509,7 @@ class AgendamentoServiceTest {
                 .cliente(cliente)
                 .prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().plusDays(1))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1))
                 .status(StatusAgendamento.PENDENTE)
                 .build();
 
@@ -539,7 +539,7 @@ class AgendamentoServiceTest {
                 .cliente(cliente)
                 .prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().plusDays(1))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1))
                 .status(StatusAgendamento.PENDENTE)
                 .build();
 
@@ -564,7 +564,7 @@ class AgendamentoServiceTest {
                 .cliente(cliente)
                 .prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().plusDays(1))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1))
                 .status(StatusAgendamento.PENDENTE)
                 .build();
 
@@ -593,7 +593,7 @@ class AgendamentoServiceTest {
                 .cliente(cliente)
                 .prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().plusDays(1))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1))
                 .status(StatusAgendamento.PENDENTE)
                 .build();
 
@@ -617,7 +617,7 @@ class AgendamentoServiceTest {
                 .cliente(cliente)
                 .prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().plusDays(1))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusDays(1))
                 .status(StatusAgendamento.CONCLUIDO)
                 .build();
 
@@ -670,21 +670,21 @@ class AgendamentoServiceTest {
         Agendamento a1 = Agendamento.builder()
                 .id(1).cliente(c1).prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now())
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                 .status(StatusAgendamento.PENDENTE)
                 .build();
 
         Agendamento a2 = Agendamento.builder()
                 .id(2).cliente(c1).prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now())
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                 .status(StatusAgendamento.CANCELADO)
                 .build();
 
         Agendamento a3 = Agendamento.builder()
                 .id(3).cliente(c2).prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now())
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                 .status(StatusAgendamento.PENDENTE)
                 .build();
 
@@ -727,7 +727,7 @@ class AgendamentoServiceTest {
         Servico servico = criarServico(3, prestador, negocio, true, 30);
         Agendamento a1 = Agendamento.builder()
                 .id(1).cliente(c1).prestador(prestador).servico(servico)
-                .dataHora(LocalDateTime.now())
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                 .status(StatusAgendamento.CANCELADO).build();
 
         when(agendamentoRepository.findByPrestador_Negocio_Id(negocio.getId()))
@@ -758,12 +758,12 @@ class AgendamentoServiceTest {
 
         Agendamento pendente = Agendamento.builder()
                 .id(10).cliente(cliente).prestador(prestador).servico(servico)
-                .dataHora(LocalDateTime.now())
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                 .status(StatusAgendamento.PENDENTE).build();
 
         Agendamento concluido = Agendamento.builder()
                 .id(11).cliente(cliente).prestador(prestador).servico(servico)
-                .dataHora(LocalDateTime.now())
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                 .status(StatusAgendamento.CONCLUIDO).build();
 
         when(agendamentoRepository.findByPrestadorId(prestador.getId()))
@@ -808,14 +808,14 @@ class AgendamentoServiceTest {
         Agendamento agVencido = Agendamento.builder()
                 .id(1).cliente(cliente).prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().minusHours(2))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).minusHours(2))
                 .status(StatusAgendamento.PENDENTE).build();
 
         // agendamento futuro
         Agendamento agFuturo = Agendamento.builder()
                 .id(2).cliente(cliente).prestador(prestador)
                 .servico(servico)
-                .dataHora(LocalDateTime.now().plusHours(2))
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusHours(2))
                 .status(StatusAgendamento.PENDENTE).build();
 
         when(agendamentoRepository.findByStatus(StatusAgendamento.PENDENTE))

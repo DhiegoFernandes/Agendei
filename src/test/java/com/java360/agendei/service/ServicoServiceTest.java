@@ -493,7 +493,7 @@ class ServicoServiceTest {
         when(servicoRepository.findById(1)).thenReturn(Optional.of(servico));
 
         assertThrows(IllegalArgumentException.class,
-                () -> servicoService.listarHorariosPorServicoEData(1, LocalDate.now()));
+                () -> servicoService.listarHorariosPorServicoEData(1, LocalDate.now(ZoneId.of("America/Sao_Paulo"))));
     }
 
     @Test
@@ -510,7 +510,7 @@ class ServicoServiceTest {
         when(disponibilidadeRepository.findByPrestadorId(10)).thenReturn(List.of());
 
         assertThrows(IllegalArgumentException.class,
-                () -> servicoService.listarHorariosPorServicoEData(1, LocalDate.now().plusDays(1)));
+                () -> servicoService.listarHorariosPorServicoEData(1, LocalDate.now(ZoneId.of("America/Sao_Paulo")).plusDays(1)));
     }
 
     @Test
