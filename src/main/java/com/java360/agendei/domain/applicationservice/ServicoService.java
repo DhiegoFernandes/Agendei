@@ -114,7 +114,7 @@ public class ServicoService {
 
 
         List<String> horariosDisponiveis = new ArrayList<>();
-        LocalTime horaAtual = LocalTime.now();
+        LocalTime horaAtual = LocalTime.now(ZoneId.of("America/Sao_Paulo"));
         LocalTime hora = disponibilidade.getHoraInicio();
         LocalTime limite = disponibilidade.getHoraFim().minusMinutes(duracao);
 
@@ -132,7 +132,7 @@ public class ServicoService {
             LocalTime fim = hora.plusMinutes(duracao);
 
             // Se for hoje e horário já passou, ignora
-            if (dataSelecionada.isEqual(LocalDate.now()) && inicio.isBefore(horaAtual)) {
+            if (dataSelecionada.isEqual(LocalDate.now(ZoneId.of("America/Sao_Paulo"))) && inicio.isBefore(horaAtual)) {
                 hora = hora.plusMinutes(duracao);
                 continue;
             }

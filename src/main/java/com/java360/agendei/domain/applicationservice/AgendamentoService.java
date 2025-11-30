@@ -433,7 +433,7 @@ public class AgendamentoService {
     @Transactional
     public void concluirAgendamentosVencidos() {
         List<Agendamento> pendentes = agendamentoRepository.findByStatus(StatusAgendamento.PENDENTE);
-        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime agora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
 
         // conclui agendamento pendente que passou o horario
         for (Agendamento ag : pendentes) {

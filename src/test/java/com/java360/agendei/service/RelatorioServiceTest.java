@@ -115,7 +115,7 @@ class RelatorioServiceTest {
         when(agRepo.findByPrestadorIdAndDataHoraBetween(anyInt(), any(), any()))
                 .thenReturn(List.of(a1, a2));
 
-        RelatorioFinanceiroDTO dto = service.relatorioFinanceiroMensal(YearMonth.now());
+        RelatorioFinanceiroDTO dto = service.relatorioFinanceiroMensal(YearMonth.now(ZoneId.of("America/Sao_Paulo")));
 
         assertEquals(new BigDecimal("0"), dto.getGanhosEsperados()); // 0 pois o agendamento já foi concluido
         assertEquals(0, dto.getGanhosRealizados().compareTo(new BigDecimal("100")));
@@ -168,7 +168,7 @@ class RelatorioServiceTest {
         when(agRepo.findByPrestadorIdAndStatusAndDataHoraBetween(anyInt(), eq(StatusAgendamento.CONCLUIDO), any(), any()))
                 .thenReturn(List.of(a));
 
-        var result = service.servicosMaisVendidos(YearMonth.now());
+        var result = service.servicosMaisVendidos(YearMonth.now(ZoneId.of("America/Sao_Paulo")));
         assertEquals(1, result.size());
         assertEquals("Corte", result.get(0).getTituloServico());
     }
@@ -246,6 +246,6 @@ class RelatorioServiceTest {
         when(negRepo.findById(10)).thenReturn(Optional.of(n));
 
         assertThrows(SecurityException.class, () ->
-                service.relatorioNegocio(10, YearMonth.now()));
+                service.relatorioNegocio(10, YearMonth.now(ZoneId.of("America/Sao_Paulo"))));
     }
 }

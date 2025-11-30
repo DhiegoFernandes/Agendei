@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -140,7 +141,7 @@ class AuthServiceTest {
         CodigoRecuperacao registro = CodigoRecuperacao.builder()
                 .email("teste@agendei.com")
                 .codigo("111111")
-                .expiraEm(LocalDateTime.now().plusMinutes(5))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusMinutes(5))
                 .ativo(true)
                 .build();
 
@@ -170,7 +171,7 @@ class AuthServiceTest {
         dto.setCodigo("123");
 
         CodigoRecuperacao registro = CodigoRecuperacao.builder()
-                .expiraEm(LocalDateTime.now().minusMinutes(1))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).minusMinutes(1))
                 .ativo(true)
                 .build();
 
@@ -188,7 +189,7 @@ class AuthServiceTest {
         dto.setCodigo("123");
 
         CodigoRecuperacao registro = CodigoRecuperacao.builder()
-                .expiraEm(LocalDateTime.now().plusMinutes(5))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusMinutes(5))
                 .ativo(false)
                 .build();
 
@@ -209,7 +210,7 @@ class AuthServiceTest {
         CodigoRecuperacao registro = CodigoRecuperacao.builder()
                 .email("teste@agendei.com")
                 .codigo("999999")
-                .expiraEm(LocalDateTime.now().plusMinutes(10))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusMinutes(10))
                 .ativo(true)
                 .build();
 
@@ -251,7 +252,7 @@ class AuthServiceTest {
         dto.setNovaSenha("Aa1@aaaa");
 
         CodigoRecuperacao reg = CodigoRecuperacao.builder()
-                .expiraEm(LocalDateTime.now().minusMinutes(1))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).minusMinutes(1))
                 .ativo(true)
                 .build();
 
@@ -270,7 +271,7 @@ class AuthServiceTest {
         dto.setNovaSenha("Aa1@aaaa");
 
         CodigoRecuperacao reg = CodigoRecuperacao.builder()
-                .expiraEm(LocalDateTime.now().plusMinutes(1))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusMinutes(1))
                 .ativo(false)
                 .build();
 
@@ -289,7 +290,7 @@ class AuthServiceTest {
         dto.setNovaSenha("Aa1@aaaa");
 
         CodigoRecuperacao reg = CodigoRecuperacao.builder()
-                .expiraEm(LocalDateTime.now().plusMinutes(1))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusMinutes(1))
                 .ativo(true)
                 .build();
 
@@ -311,7 +312,7 @@ class AuthServiceTest {
         dto.setNovaSenha("123"); // fraca
 
         CodigoRecuperacao reg = CodigoRecuperacao.builder()
-                .expiraEm(LocalDateTime.now().plusMinutes(1))
+                .expiraEm(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).plusMinutes(1))
                 .ativo(true)
                 .build();
 
