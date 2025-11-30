@@ -33,6 +33,10 @@ spring:
   jwt:
     SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
 
+  frontend:
+    url: https://red-island-067d14e0f.3.azurestaticapps.net
+
+
   profiles:
     active: sqlserver   # dev | localmysql
 
