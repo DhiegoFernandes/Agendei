@@ -18,13 +18,16 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.frontend.url}")
+    private String frontendUrl;
+
     @Value("${spring.mail.username}")
     private String remetente; // o e-mail configurado no application.yml
 
     public void enviarCodigoRecuperacao(String email, String codigo) {
         try {
             String assunto = "Recuperação de Senha - Agendei";
-            String link = "(LINK DE INSERIR SENHA)" + email + "&codigo=" + codigo;
+            String link = frontendUrl + "/redefinir-senha?email=" + email + "&codigo=" + codigo;
 
             String html = """
                     <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
