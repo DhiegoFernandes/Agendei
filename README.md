@@ -1,15 +1,15 @@
-Agendei - Backend
+# Agendei - Backend
 
 Versão: v1.0.0
 Último Commit: <INSIRA_AQUI_O_HASH_DO_ULTIMO_COMMIT>
 Data: 30/11/2025
 
-Descrição do Projeto:
+# Descrição do Projeto:
 O Agendei é um sistema de agendamento de serviços online, voltado para pequenos negócios e profissionais de estética e beleza. Permite que clientes agendem serviços, visualizem horários disponíveis, e que prestadores configurem sua disponibilidade, horário de almoço, e gerenciem seus agendamentos.
 
 O sistema foi desenvolvido em Spring Boot 3.4.4 com arquitetura em camadas, utilizando JPA/Hibernate para persistência de dados e Spring Security com JWT para autenticação.
 
-Tecnologias e Frameworks:
+# Tecnologias e Frameworks:
 - Java: 21
 - Spring Boot: 3.4.4
 - Spring Data JPA: Persistência de dados
@@ -25,7 +25,7 @@ Tecnologias e Frameworks:
 - JaCoCo: Cobertura de testes
 - Logging: commons-logging 1.2
 
-Estrutura de Perfis:
+# Estrutura de Perfis:
 Perfil        | Banco de Dados          | Uso
 ------------ | ---------------------- | --------------------------------
 dev          | H2 em memória           | Testes e desenvolvimento local
