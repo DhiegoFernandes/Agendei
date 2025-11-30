@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -103,13 +104,13 @@ class RelatorioServiceTest {
         a1.setPrestador(p);
         a1.setServico(serv);
         a1.setStatus(StatusAgendamento.CONCLUIDO);
-        a1.setDataHora(LocalDateTime.now());
+        a1.setDataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
         Agendamento a2 = new Agendamento();
         a2.setPrestador(p);
         a2.setServico(serv);
         a2.setStatus(StatusAgendamento.CANCELADO);
-        a2.setDataHora(LocalDateTime.now());
+        a2.setDataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
         when(agRepo.findByPrestadorIdAndDataHoraBetween(anyInt(), any(), any()))
                 .thenReturn(List.of(a1, a2));
@@ -162,7 +163,7 @@ class RelatorioServiceTest {
         a.setPrestador(p);
         a.setServico(s);
         a.setStatus(StatusAgendamento.CONCLUIDO);
-        a.setDataHora(LocalDateTime.now());
+        a.setDataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
         when(agRepo.findByPrestadorIdAndStatusAndDataHoraBetween(anyInt(), eq(StatusAgendamento.CONCLUIDO), any(), any()))
                 .thenReturn(List.of(a));
@@ -214,7 +215,7 @@ class RelatorioServiceTest {
         ag.setPrestador(prest1);
         ag.setServico(s);
         ag.setStatus(StatusAgendamento.CONCLUIDO);
-        ag.setDataHora(LocalDateTime.now());
+        ag.setDataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")));
 
         when(negRepo.findById(10)).thenReturn(Optional.of(n));
         when(prestRepo.findByNegocio_Id(10)).thenReturn(List.of(prest1));

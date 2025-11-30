@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -50,7 +51,7 @@ public class AgendamentoService {
         if (dto.getServicoId() == null)
             throw new IllegalArgumentException("O ID do serviço é obrigatório ao criar um agendamento.");
 
-        if (!dto.getDataHora().isAfter(LocalDateTime.now()))
+        if (!dto.getDataHora().isAfter(LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))))
             throw new IllegalArgumentException("Não é possível criar um agendamento no passado.");
 
         Servico servico = servicoRepository.findById(dto.getServicoId())
@@ -161,7 +162,7 @@ public class AgendamentoService {
             throw new SecurityException("Você não tem permissão para alterar este agendamento.");
         }
 
-        if (!dto.getDataHora().isAfter(LocalDateTime.now())) {
+        if (!dto.getDataHora().isAfter(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))) {
             throw new IllegalArgumentException("Não é possível agendar para o passado.");
         }
 

@@ -13,6 +13,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,7 +67,7 @@ class NegocioServiceSairExcluirTest {
 
         Agendamento pend = Agendamento.builder()
                 .id(100).cliente(new Cliente()).prestador(convidado).servico(s1)
-                .dataHora(LocalDateTime.now()).status(StatusAgendamento.PENDENTE).build();
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))).status(StatusAgendamento.PENDENTE).build();
 
         when(agendamentoRepository.findByPrestadorId(convidado.getId())).thenReturn(List.of(pend));
 
@@ -98,7 +99,7 @@ class NegocioServiceSairExcluirTest {
         when(prestadorRepository.findByNegocio_Id(20)).thenReturn(List.of(p1));
 
         Agendamento pend = Agendamento.builder().id(5).prestador(p1).servico(s).cliente(new Cliente())
-                .dataHora(LocalDateTime.now()).status(StatusAgendamento.PENDENTE).build();
+                .dataHora(LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))).status(StatusAgendamento.PENDENTE).build();
         when(agendamentoRepository.findByPrestadorId(p1.getId())).thenReturn(List.of(pend));
 
         negocioService.excluirNegocio(20);

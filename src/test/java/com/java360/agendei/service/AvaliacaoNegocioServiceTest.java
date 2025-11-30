@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -93,7 +94,7 @@ class AvaliacaoNegocioServiceTest {
                 .negocio(negocio)
                 .nota(5)
                 .comentario("Ótimo serviço!")
-                .dataAvaliacao(LocalDateTime.now())
+                .dataAvaliacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                 .build();
 
         when(avaliacaoRepo.save(any())).thenReturn(salva);
@@ -120,7 +121,7 @@ class AvaliacaoNegocioServiceTest {
                 .negocio(negocio)
                 .nota(3)
                 .comentario("Ok")
-                .dataAvaliacao(LocalDateTime.now().minusDays(1))
+                .dataAvaliacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).minusDays(1))
                 .build();
 
         when(agendamentoRepo.findById(100)).thenReturn(Optional.of(agendamento));
@@ -199,7 +200,7 @@ class AvaliacaoNegocioServiceTest {
                 .cliente(cliente)
                 .nota(5)
                 .comentario("Perfeito")
-                .dataAvaliacao(LocalDateTime.now())
+                .dataAvaliacao(LocalDateTime.now(ZoneId.of("America/Sao_Paulo")))
                 .build();
 
         when(avaliacaoRepo.findByNegocioId(10))
