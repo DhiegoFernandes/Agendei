@@ -98,12 +98,19 @@ public class ServicoService {
                 .orElseThrow(() -> new IllegalArgumentException("O prestador não tem disponibilidade nesse dia."));
 
         // Busca agendamentos pendentes do dia
-        List<Agendamento> agendamentos = agendamentoRepository.findByPrestadorIdAndStatusAndDataHoraBetween(
-                prestador.getId(),
-                StatusAgendamento.PENDENTE,
-                dataSelecionada.atStartOfDay(),
-                dataSelecionada.plusDays(1).atStartOfDay()
-        );
+        List<Agendamento> agendamentos = agendamentoRepository
+                .findByPrestadorIdAndDataHoraBetween(
+                        prestador.getId(),
+                        dataSelecionada.atStartOfDay(),
+                        dataSelecionada.plusDays(1).atStartOfDay()
+                )
+                .stream()
+                .filter(a ->
+                        a.getStatus() == StatusAgendamento.PENDENTE ||
+                                a.getStatus() == StatusAgendamento.CONCLUIDO
+                )
+                .toList();
+
 
         List<String> horariosDisponiveis = new ArrayList<>();
         LocalTime horaAtual = LocalTime.now();
