@@ -27,7 +27,7 @@ public class EmailService {
     public void enviarCodigoRecuperacao(String email, String codigo) {
         try {
             String assunto = "Recuperação de Senha - Agendei";
-            String link = frontendUrl + "/redefinir-senha?email=" + email + "&codigo=" + codigo;
+            String link = frontendUrl + "/redefinirSenha?email=" + email + "&codigo=" + codigo;
 
             String html = """
                     <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
