@@ -50,9 +50,9 @@ spring:
       on-profile: sqlserver
 
   datasource:
-    url: jdbc:sqlserver://agendeidb.database.windows.net:1433;databaseName=agendeidb;encrypt=true;trustServerCertificate=false;loginTimeout=30;
-    username: dbmaster
-    password: Agendei@123
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
     hikari:
