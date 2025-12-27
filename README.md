@@ -43,7 +43,7 @@ sqlserver    | SQL Server Azure        | Produção alternativa
 Configuração e Deployment:
 
 1. Clone do Repositório:
-git clone https://github.com/dhiegosenac/agendeiFrontSenac.git
+git clone https://github.com/DhiegoFernandes/Agendei.git
 cd agendei
 
 2. Instalar dependências e build:
