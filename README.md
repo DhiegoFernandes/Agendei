@@ -1,13 +1,19 @@
-# Agendei - Backend
 
-Versão: v1.0.0
-Último Commit: 6038b2e21a8f6d70a702b3519ccde865999eaecb
-Data: 30/11/2025
 
-# Descrição do Projeto:
-O Agendei é um sistema de agendamento de serviços online, voltado para pequenos negócios e profissionais de estética e beleza. Permite que clientes agendem serviços, visualizem horários disponíveis, e que prestadores configurem sua disponibilidade, horário de almoço, e gerenciem seus agendamentos.
+<br>
+<div align="center">
 
-O sistema foi desenvolvido em Spring Boot 3.4.4 com arquitetura em camadas, utilizando JPA/Hibernate para persistência de dados e Spring Security com JWT para autenticação.
+[<img src="https://i.imgur.com/k3l8Ynj.png" width="144"/>]([https://github.com/DhiegoFernandes/PI5-BookUp](https://github.com/DhiegoFernandes/agendei))
+
+  <h1 align="center">Agendei - Backend</h1>
+
+  <p align="center">
+    <strong>O Agendei é um sistema de agendamento de serviços online, voltado para pequenos negócios e profissionais de estética e beleza. Permite que clientes agendem serviços, visualizem horários disponíveis, e que prestadores configurem sua disponibilidade, horário de almoço, e gerenciem seus agendamentos.</strong>
+  </p>
+
+[![pt-BR](https://img.shields.io/badge/lang-pt--BR-green.svg)](README.md)
+
+</div>
 
 # Tecnologias e Frameworks:
 - Java: 21
@@ -24,6 +30,8 @@ O sistema foi desenvolvido em Spring Boot 3.4.4 com arquitetura em camadas, util
 - JUnit + Spring Boot Test: Testes unitários e de integração
 - JaCoCo: Cobertura de testes
 - Logging: commons-logging 1.2
+
+- Desenvolvido em Spring Boot 3.4.4 com arquitetura em camadas, utilizando JPA/Hibernate para persistência de dados e Spring Security com JWT para autenticação.
 
 # Estrutura de Perfis:
 Perfil        | Banco de Dados          | Uso
