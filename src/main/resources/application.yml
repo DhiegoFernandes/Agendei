@@ -21,14 +21,14 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: agendeiofficial@gmail.com
-    password: ygrcnbgqhkvxxypj
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
   maps:
-    key: AIzaSyDQHCfEBOf_EO6Abo4Q-n987llQhru87Rw
+    key: ${MAPS_KEY}
 
   jwt:
     SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
@@ -50,9 +50,9 @@ spring:
       on-profile: sqlserver
 
   datasource:
-    url: jdbc:sqlserver://agendeidb.database.windows.net:1433;databaseName=agendeidb;encrypt=true;trustServerCertificate=false;loginTimeout=30;
-    username: dbmaster
-    password: Agendei@123
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
     hikari:
@@ -135,7 +135,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
