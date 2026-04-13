@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/negocios/*/fotos/**",
                                 "/negocios/**"
                         ).permitAll()// Acesso livre nessas URI
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -71,7 +72,12 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",   // desenvolvimento local
                 "https://agendei-dusky.vercel.app",
-                "https://red-island-067d14e0f.3.azurestaticapps.net"
+                "https://red-island-067d14e0f.3.azurestaticapps.net",
+                "https://agendeifrontend-git-main-dhiegos-projects-dddf043b.vercel.app",
+                "https://agendeifrontend.vercel.app",
+                "https://agendeifrontend-ekpc8ekrg-dhiegos-projects-dddf043b.vercel.app"
+
+
         ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

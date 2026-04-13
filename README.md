@@ -63,7 +63,6 @@ mvn spring-boot:run -Dspring-boot.run.profiles=prod
 
 Script de criação (MySQL exemplo local):
 CREATE DATABASE agendei;
-USE agendei;
 -- Tabelas serão criadas automaticamente pelo Hibernate
 
 Observação: Para produção, configure ddl-auto: none ou use scripts específicos fornecidos.
@@ -76,8 +75,8 @@ mvn test
 Autenticação:
 - JWT com Spring Security
 - Roles: CLIENTE, PRESTADOR, ADMIN
-- O ADMIN possui permissão total no sistema
+- O ADMIN possui permissão total no sistema (Login/senha: admin)
 
 Projeto agendei:
 - Desenvolvedores: Dhiego Fernandes da Silva, Guilherme Cunha Alves, Moises Alves Silva
-- Frontend integrado: https://red-island-067d14e0f.3.azurestaticapps.net
+- Frontend integrado: https://agendeifrontend.vercel.app/

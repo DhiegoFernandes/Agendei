@@ -2,6 +2,7 @@
 # CONFIGURAÇÕES COMPARTILHADAS (TODOS OS PERFIS)
 # ===================================================================
 server:
+  port: ${PORT:8080}
   servlet:
     context-path: /
 
@@ -31,14 +32,14 @@ spring:
     key: ${MAPS_KEY}
 
   jwt:
-    SECRET_KEY: chave-super-secreta-de-256-bits-jwt-agendei
+    SECRET_KEY: ${JWT_SECRET_KEY}
 
   frontend:
-    url: https://red-island-067d14e0f.3.azurestaticapps.net
+    url: ${FRONTEND_URL}
 
 
   profiles:
-    active: sqlserver   # dev | localmysql
+    active: neon   # dev | localmysql | neon
 
 ---
 # ===================================================================
@@ -98,26 +99,25 @@ spring:
 
 ---
 # ===================================================================
-# PERFIL PROD — MYSQL ORACLE CLOUD (VCN PRIVADA)
+# PERFIL NEON — POSTGRES
 # ===================================================================
 spring:
   config:
     activate:
-      on-profile: prod
+      on-profile: neon
+
   datasource:
-    url: jdbc:mysql://10.0.2.21:3306/agendei?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: agendei_root
-    password: Agendei@123
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-  h2:
-    console:
-      enabled: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 
 ---

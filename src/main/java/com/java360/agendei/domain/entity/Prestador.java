@@ -19,8 +19,7 @@ public class Prestador extends Usuario {
     @ToString.Exclude // evita loop de referencia infinita
     private Negocio negocio;
 
-    @Lob
-    @Column(name = "foto_perfil", columnDefinition = "MEDIUMBLOB")
+    @Column(name = "foto_perfil", columnDefinition = "BYTEA")
     private byte[] fotoPerfil;
 
     @Enumerated(EnumType.STRING)

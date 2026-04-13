@@ -15,8 +15,7 @@ public class FotoNegocio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Lob // armazena binario grande no banco de dados
-    @Column(nullable = false, columnDefinition = "MEDIUMBLOB")
+    @Column(nullable = false, columnDefinition = "BYTEA")
     @ToString.Exclude
     private byte[] imagem;
 
